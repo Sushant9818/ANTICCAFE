@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 68" fill="none">
+  <!-- C — large sweeping curve, overlaps with the left leg of A -->
+  <path d="M50,13 C32,8 10,20 10,36 C10,52 30,63 50,60"
+        stroke="#111111" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+  <!-- C top serif -->
+  <path d="M50,13 L44,11" stroke="#111111" stroke-width="1.4" stroke-linecap="round"/>
+  <!-- C bottom serif -->
+  <path d="M50,60 L44,63" stroke="#111111" stroke-width="1.4" stroke-linecap="round"/>
+
+  <!-- A — left leg -->
+  <path d="M52,9 L31,63" stroke="#111111" stroke-width="1.4" stroke-linecap="round"/>
+  <!-- A — right leg -->
+  <path d="M52,9 L73,63" stroke="#111111" stroke-width="1.4" stroke-linecap="round"/>
+  <!-- A — crossbar -->
+  <path d="M38,44 L66,44" stroke="#111111" stroke-width="1.4" stroke-linecap="round"/>
+
+  <!-- A apex serif (tiny horizontal) -->
+  <path d="M49,9 L55,9" stroke="#111111" stroke-width="1.4" stroke-linecap="round"/>
+  <!-- A left-leg base serif -->
+  <path d="M26,63 L36,63" stroke="#111111" stroke-width="1.4" stroke-linecap="round"/>
+  <!-- A right-leg base serif -->
+  <path d="M68,63 L78,63" stroke="#111111" stroke-width="1.4" stroke-linecap="round"/>
+
+  <!-- ANTIC -->
+  <text x="88" y="35"
+        font-family="'Times New Roman', Georgia, 'Palatino Linotype', serif"
+        font-size="16"
+        letter-spacing="4"
+        fill="#111111">ANTIC</text>
+
+  <!-- CAFE -->
+  <text x="88" y="56"
+        font-family="'Times New Roman', Georgia, 'Palatino Linotype', serif"
+        font-size="16"
+        letter-spacing="4"
+        fill="#111111">CAFE</text>
+</svg>
