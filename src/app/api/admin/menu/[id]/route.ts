@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { menuItems } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 const schema = z.object({
@@ -22,16 +20,31 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const body = await req.json();
     const data = schema.parse(body);
-    const [updated] = await db
-      .update(menuItems)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(menuItems.id, id))
-      .returning();
-    if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const updateData: any = {
+      updated_at: new Date(),
+    };
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.price !== undefined) updateData.price = data.price;
+    if (data.categoryId !== undefined) updateData.category_id = data.categoryId;
+    if (data.imageUrl !== undefined) updateData.image_url = data.imageUrl;
+    if (data.isAvailable !== undefined) updateData.is_available = data.isAvailable;
+    if (data.isVegetarian !== undefined) updateData.is_vegetarian = data.isVegetarian;
+    if (data.isVegan !== undefined) updateData.is_vegan = data.isVegan;
+    if (data.isGlutenFree !== undefined) updateData.is_gluten_free = data.isGlutenFree;
+    if (data.isFeatured !== undefined) updateData.is_featured = data.isFeatured;
+
+    const updated = await db.menu_items.update({
+      where: { id },
+      data: updateData,
+    });
     return NextResponse.json(updated);
   } catch (err) {
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: err.errors[0].message }, { status: 400 });
+    }
+    if (err && typeof err === "object" && (err as { code?: string }).code === "P2025") {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
     return NextResponse.json({ error: "Failed to update item" }, { status: 500 });
   }
@@ -40,9 +53,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
-    await db.delete(menuItems).where(eq(menuItems.id, id));
+    await db.menu_items.delete({ where: { id } });
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (err) {
+    if (err && typeof err === "object" && (err as { code?: string }).code === "P2025") {
+      return NextResponse.json({ ok: true });
+    }
     return NextResponse.json({ error: "Failed to delete item" }, { status: 500 });
   }
 }

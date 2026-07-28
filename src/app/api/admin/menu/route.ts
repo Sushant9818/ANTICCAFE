@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { menuItems } from "@/db/schema";
 import { z } from "zod";
 
 const schema = z.object({
@@ -24,15 +23,21 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const data = schema.parse(body);
     const slug = `${toSlug(data.name)}-${Date.now()}`;
-    const [item] = await db
-      .insert(menuItems)
-      .values({
-        ...data,
+    const item = await db.menu_items.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        category_id: data.categoryId,
+        image_url: data.imageUrl || null,
+        is_available: true,
+        is_vegetarian: data.isVegetarian,
+        is_vegan: data.isVegan,
+        is_gluten_free: data.isGlutenFree,
+        is_featured: data.isFeatured,
         slug,
-        imageUrl: data.imageUrl || null,
-        isAvailable: true,
-      })
-      .returning();
+      },
+    });
     return NextResponse.json(item, { status: 201 });
   } catch (err) {
     if (err instanceof z.ZodError) {

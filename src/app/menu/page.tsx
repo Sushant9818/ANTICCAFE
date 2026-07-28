@@ -1,6 +1,4 @@
 import { db } from "@/db";
-import { menuItems, menuCategories } from "@/db/schema";
-import { eq, asc } from "drizzle-orm";
 import { MenuGrid } from "@/components/menu/menu-grid";
 import type { Metadata } from "next";
 
@@ -11,45 +9,54 @@ export const metadata: Metadata = {
 
 async function getMenuData() {
   try {
-    const [categories, items] = await Promise.all([
-      db
-        .select()
-        .from(menuCategories)
-        .where(eq(menuCategories.isActive, true))
-        .orderBy(asc(menuCategories.sortOrder)),
-      db
-        .select({
-          id: menuItems.id,
-          categoryId: menuItems.categoryId,
-          name: menuItems.name,
-          slug: menuItems.slug,
-          description: menuItems.description,
-          price: menuItems.price,
-          imageUrl: menuItems.imageUrl,
-          isAvailable: menuItems.isAvailable,
-          isVegetarian: menuItems.isVegetarian,
-          isVegan: menuItems.isVegan,
-          isGlutenFree: menuItems.isGlutenFree,
-          isFeatured: menuItems.isFeatured,
-          sortOrder: menuItems.sortOrder,
-          createdAt: menuItems.createdAt,
-          updatedAt: menuItems.updatedAt,
-          category: {
-            id: menuCategories.id,
-            name: menuCategories.name,
-            slug: menuCategories.slug,
-            description: menuCategories.description,
-            sortOrder: menuCategories.sortOrder,
-            isActive: menuCategories.isActive,
-            createdAt: menuCategories.createdAt,
-            updatedAt: menuCategories.updatedAt,
-          },
-        })
-        .from(menuItems)
-        .innerJoin(menuCategories, eq(menuItems.categoryId, menuCategories.id))
-        .where(eq(menuItems.isAvailable, true))
-        .orderBy(asc(menuCategories.sortOrder), asc(menuItems.sortOrder)),
+    const [categoriesRaw, itemsRaw] = await Promise.all([
+      db.menu_categories.findMany({
+        where: { is_active: true },
+        orderBy: { sort_order: "asc" },
+      }),
+      db.menu_items.findMany({
+        where: { is_available: true },
+        include: { category: true },
+        orderBy: [{ category: { sort_order: "asc" } }, { sort_order: "asc" }],
+      }),
     ]);
+    const categories = categoriesRaw.map((c) => ({
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      description: c.description,
+      sortOrder: c.sort_order,
+      isActive: c.is_active,
+      createdAt: c.created_at,
+      updatedAt: c.updated_at,
+    }));
+    const items = itemsRaw.map((i) => ({
+      id: i.id,
+      name: i.name,
+      slug: i.slug,
+      description: i.description,
+      price: i.price.toString(),
+      categoryId: i.category_id,
+      imageUrl: i.image_url,
+      isAvailable: i.is_available,
+      isVegetarian: i.is_vegetarian,
+      isVegan: i.is_vegan,
+      isGlutenFree: i.is_gluten_free,
+      isFeatured: i.is_featured,
+      sortOrder: i.sort_order,
+      createdAt: i.created_at,
+      updatedAt: i.updated_at,
+      category: {
+        id: i.category.id,
+        name: i.category.name,
+        slug: i.category.slug,
+        description: i.category.description,
+        sortOrder: i.category.sort_order,
+        isActive: i.category.is_active,
+        createdAt: i.category.created_at,
+        updatedAt: i.category.updated_at,
+      },
+    }));
     return { categories, items };
   } catch {
     return { categories: [], items: [] };

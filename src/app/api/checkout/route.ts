@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { stripe } from "@/lib/stripe";
 import { db } from "@/db";
-import { orders, orderItems } from "@/db/schema";
 import { TAX_RATE, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD } from "@/lib/constants";
-import { eq } from "drizzle-orm";
 import { randomBytes } from "crypto";
 
 const schema = z.object({
@@ -43,40 +41,39 @@ export async function POST(req: NextRequest) {
     const accessToken = randomBytes(20).toString("hex");
 
     // Create order in DB first
-    const [order] = await db
-      .insert(orders)
-      .values({
-        customerName: data.customerName,
-        customerEmail: data.customerEmail || null,
-        customerPhone: data.customerPhone,
-        orderType: data.orderType,
+    const order = await db.orders.create({
+      data: {
+        customer_name: data.customerName,
+        customer_email: data.customerEmail || null,
+        customer_phone: data.customerPhone,
+        order_type: data.orderType,
         status: "pending",
-        paymentStatus: "pending",
+        payment_status: "pending",
         subtotal: subtotal.toFixed(2),
         tax: tax.toFixed(2),
         tip: tip.toFixed(2),
-        deliveryFee: delivery.toFixed(2),
+        delivery_fee: delivery.toFixed(2),
         total: total.toFixed(2),
-        deliveryAddress: data.deliveryAddress || null,
-        deliveryCity: data.deliveryCity || null,
-        deliveryState: data.deliveryState || null,
-        deliveryZip: data.deliveryZip || null,
-        specialInstructions: data.specialInstructions || null,
-        promoCode: data.promoCode || null,
-        accessToken,
-      })
-      .returning();
+        delivery_address: data.deliveryAddress || null,
+        delivery_city: data.deliveryCity || null,
+        delivery_state: data.deliveryState || null,
+        delivery_zip: data.deliveryZip || null,
+        special_instructions: data.specialInstructions || null,
+        promo_code: data.promoCode || null,
+        access_token: accessToken,
+      },
+    });
 
     // Insert order items
-    await db.insert(orderItems).values(
-      data.items.map((item) => ({
-        orderId: order.id,
-        menuItemId: item.id,
-        itemName: item.name,
-        itemPrice: item.price.toFixed(2),
+    await db.order_items.createMany({
+      data: data.items.map((item) => ({
+        order_id: order.id,
+        menu_item_id: item.id,
+        item_name: item.name,
+        item_price: item.price.toFixed(2),
         quantity: item.quantity,
-      }))
-    );
+      })),
+    });
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
@@ -129,17 +126,17 @@ export async function POST(req: NextRequest) {
       customer_email: data.customerEmail || undefined,
       metadata: {
         orderId: order.id,
-        orderNumber: String(order.orderNumber),
+        orderNumber: String(order.order_number),
       },
       success_url: `${baseUrl}/order/${order.id}?success=1`,
       cancel_url: `${baseUrl}/checkout?cancelled=1`,
     });
 
     // Store Stripe session ID
-    await db
-      .update(orders)
-      .set({ stripeCheckoutSessionId: session.id })
-      .where(eq(orders.id, order.id));
+    await db.orders.update({
+      where: { id: order.id },
+      data: { stripe_checkout_session_id: session.id },
+    });
 
     return NextResponse.json({ url: session.url });
   } catch (err) {

@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { menuItems, menuCategories } from "@/db/schema";
-import { eq, asc } from "drizzle-orm";
 
 export async function GET() {
   try {
     const [categories, items] = await Promise.all([
-      db.select().from(menuCategories).where(eq(menuCategories.isActive, true)).orderBy(asc(menuCategories.sortOrder)),
-      db
-        .select()
-        .from(menuItems)
-        .innerJoin(menuCategories, eq(menuItems.categoryId, menuCategories.id))
-        .where(eq(menuItems.isAvailable, true))
-        .orderBy(asc(menuCategories.sortOrder), asc(menuItems.sortOrder)),
+      db.menu_categories.findMany({
+        where: { is_active: true },
+        orderBy: { sort_order: "asc" },
+      }),
+      db.menu_items.findMany({
+        where: { is_available: true },
+        include: { category: true },
+        orderBy: [{ category: { sort_order: "asc" } }, { sort_order: "asc" }],
+      }),
     ]);
     return NextResponse.json({ categories, items });
   } catch {

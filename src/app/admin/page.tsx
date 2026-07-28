@@ -1,6 +1,4 @@
 import { db } from "@/db";
-import { orders, reservations, menuItems } from "@/db/schema";
-import { eq, count, sql, gte } from "drizzle-orm";
 import { ShoppingBag, CalendarDays, DollarSign, Package } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
@@ -14,24 +12,29 @@ async function getStats() {
       todayOrders,
       pendingOrders,
       pendingReservations,
-      todayRevenue,
+      todayRevenueResult,
       activeItems,
     ] = await Promise.all([
-      db.select({ count: count() }).from(orders),
-      db.select({ count: count() }).from(orders).where(gte(orders.createdAt, today)),
-      db.select({ count: count() }).from(orders).where(eq(orders.status, "pending")),
-      db.select({ count: count() }).from(reservations).where(eq(reservations.status, "pending")),
-      db.select({ total: sql<number>`coalesce(sum(total::numeric), 0)` }).from(orders).where(gte(orders.createdAt, today)),
-      db.select({ count: count() }).from(menuItems).where(eq(menuItems.isAvailable, true)),
+      db.orders.count(),
+      db.orders.count({ where: { created_at: { gte: today } } }),
+      db.orders.count({ where: { status: "pending" } }),
+      db.reservations.count({ where: { status: "pending" } }),
+      db.orders.aggregate({
+        _sum: { total: true },
+        where: { created_at: { gte: today } },
+      }),
+      db.menu_items.count({ where: { is_available: true } }),
     ]);
 
+    const todayRevenue = todayRevenueResult._sum.total ?? 0;
+
     return {
-      totalOrders: totalOrders[0].count,
-      todayOrders: todayOrders[0].count,
-      pendingOrders: pendingOrders[0].count,
-      pendingReservations: pendingReservations[0].count,
-      todayRevenue: todayRevenue[0].total,
-      activeItems: activeItems[0].count,
+      totalOrders,
+      todayOrders,
+      pendingOrders,
+      pendingReservations,
+      todayRevenue: Number(todayRevenue),
+      activeItems,
     };
   } catch {
     return {
@@ -47,7 +50,10 @@ async function getStats() {
 
 async function getRecentOrders() {
   try {
-    return await db.select().from(orders).orderBy(sql`created_at desc`).limit(5);
+    return await db.orders.findMany({
+      orderBy: { created_at: "desc" },
+      take: 5,
+    });
   } catch {
     return [];
   }
@@ -66,7 +72,7 @@ export default async function AdminDashboard() {
     },
     {
       label: "Today's Revenue",
-      value: formatPrice(Number(stats.todayRevenue)),
+      value: formatPrice(stats.todayRevenue),
       icon: DollarSign,
       color: "text-green-700",
       bg: "bg-green-50",
@@ -121,9 +127,9 @@ export default async function AdminDashboard() {
             <tbody>
               {recentOrders.map((order) => (
                 <tr key={order.id} className="border-b border-stone-50 last:border-0">
-                  <td className="py-2.5 text-stone-500">#{order.orderNumber}</td>
-                  <td className="py-2.5 font-medium text-stone-800">{order.customerName}</td>
-                  <td className="py-2.5 capitalize text-stone-600">{order.orderType}</td>
+                  <td className="py-2.5 text-stone-500">#{order.order_number}</td>
+                  <td className="py-2.5 font-medium text-stone-800">{order.customer_name}</td>
+                  <td className="py-2.5 capitalize text-stone-600">{order.order_type}</td>
                   <td className="py-2.5">
                     <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 capitalize">
                       {order.status.replace(/_/g, " ")}

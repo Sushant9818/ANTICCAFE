@@ -1,35 +1,48 @@
 import { db } from "@/db";
-import { menuItems, menuCategories } from "@/db/schema";
-import { eq, asc } from "drizzle-orm";
 import { AdminMenuManager } from "@/components/admin/menu-manager";
 
 async function getMenuData() {
   try {
-    const [categories, items] = await Promise.all([
-      db.select().from(menuCategories).orderBy(asc(menuCategories.sortOrder)),
-      db
-        .select({
-          id: menuItems.id,
-          categoryId: menuItems.categoryId,
-          name: menuItems.name,
-          slug: menuItems.slug,
-          description: menuItems.description,
-          price: menuItems.price,
-          imageUrl: menuItems.imageUrl,
-          isAvailable: menuItems.isAvailable,
-          isVegetarian: menuItems.isVegetarian,
-          isVegan: menuItems.isVegan,
-          isGlutenFree: menuItems.isGlutenFree,
-          isFeatured: menuItems.isFeatured,
-          sortOrder: menuItems.sortOrder,
-          createdAt: menuItems.createdAt,
-          updatedAt: menuItems.updatedAt,
-          categoryName: menuCategories.name,
-        })
-        .from(menuItems)
-        .innerJoin(menuCategories, eq(menuItems.categoryId, menuCategories.id))
-        .orderBy(asc(menuCategories.sortOrder), asc(menuItems.sortOrder)),
+    const [categoriesRaw, itemsWithCategory] = await Promise.all([
+      db.menu_categories.findMany({
+        orderBy: { sort_order: "asc" },
+      }),
+      db.menu_items.findMany({
+        include: { category: true },
+        orderBy: [{ category: { sort_order: "asc" } }, { sort_order: "asc" }],
+      }),
     ]);
+
+    const categories = categoriesRaw.map((c) => ({
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      description: c.description,
+      sortOrder: c.sort_order,
+      isActive: c.is_active,
+      createdAt: c.created_at,
+      updatedAt: c.updated_at,
+    }));
+
+    const items = itemsWithCategory.map((item) => ({
+      id: item.id,
+      name: item.name,
+      slug: item.slug,
+      description: item.description,
+      price: item.price.toString(),
+      categoryId: item.category_id,
+      imageUrl: item.image_url,
+      isAvailable: item.is_available,
+      isVegetarian: item.is_vegetarian,
+      isVegan: item.is_vegan,
+      isGlutenFree: item.is_gluten_free,
+      isFeatured: item.is_featured,
+      sortOrder: item.sort_order,
+      createdAt: item.created_at,
+      updatedAt: item.updated_at,
+      categoryName: item.category.name,
+    }));
+
     return { categories, items };
   } catch {
     return { categories: [], items: [] };

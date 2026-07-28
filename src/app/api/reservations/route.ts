@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { reservations } from "@/db/schema";
 import { z } from "zod";
 
 const schema = z.object({
@@ -17,19 +16,18 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const data = schema.parse(body);
-    const [reservation] = await db
-      .insert(reservations)
-      .values({
-        customerName: data.customerName,
-        customerEmail: data.customerEmail || null,
-        customerPhone: data.customerPhone || null,
+    const reservation = await db.reservations.create({
+      data: {
+        customer_name: data.customerName,
+        customer_email: data.customerEmail || null,
+        customer_phone: data.customerPhone || null,
         date: data.date,
-        timeSlot: data.timeSlot,
-        partySize: data.partySize,
-        specialRequests: data.specialRequests || null,
+        time_slot: data.timeSlot,
+        party_size: data.partySize,
+        special_requests: data.specialRequests || null,
         status: "pending",
-      })
-      .returning();
+      },
+    });
     return NextResponse.json(reservation, { status: 201 });
   } catch (err) {
     if (err instanceof z.ZodError) {

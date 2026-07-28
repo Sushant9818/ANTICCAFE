@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useClerk } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -24,6 +25,11 @@ const navItems = [
 
 export function AdminNav() {
   const pathname = usePathname();
+  const { signOut } = useClerk();
+
+  const handleLogout = () => {
+    signOut({ redirectUrl: "/" });
+  };
 
   return (
     <aside className="w-56 bg-stone-900 text-stone-300 flex flex-col shrink-0 min-h-screen">
@@ -66,6 +72,9 @@ export function AdminNav() {
         >
           ← Back to site
         </Link>
+        <button onClick={handleLogout} className="text-xs text-stone-500 hover:text-stone-300 transition-colors mt-2 block">
+          Log out
+        </button>
       </div>
     </aside>
   );

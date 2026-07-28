@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model menu_categories {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  slug        String   @unique
+  description String?
+  sort_order  Int      @default(0)
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+
+  menu_items menu_items[]
+}
+
+model menu_items {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  category_id     String   @db.Uuid
+  name            String
+  slug            String   @unique
+  description     String?
+  price           Decimal
+  image_url       String?
+  is_available    Boolean  @default(true)
+  is_vegetarian   Boolean  @default(false)
+  is_vegan        Boolean  @default(false)
+  is_gluten_free  Boolean  @default(false)
+  is_featured     Boolean  @default(false)
+  sort_order      Int      @default(0)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @default(now())
+
+  category menu_categories @relation(fields: [category_id], references: [id])
+
+  order_items order_items[]
+
+  @@index([category_id])
+}
+
+model customers {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email           String?  @unique
+  phone           String?
+  name            String?
+  loyalty_points  Int      @default(0)
+  order_count     Int      @default(0)
+  notes           String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @default(now())
+
+  orders       orders[]
+  reservations reservations[]
+}
+
+model orders {
+  id                         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_number               Int      @default(autoincrement())
+  customer_id                String?  @db.Uuid
+  customer_name              String
+  customer_email             String?
+  customer_phone             String?
+  order_type                 String   @default("pickup")
+  status                     String   @default("pending")
+  payment_status             String   @default("pending")
+  subtotal                   Decimal
+  tax                        Decimal  @default(0)
+  tip                        Decimal  @default(0)
+  delivery_fee               Decimal  @default(0)
+  discount                   Decimal  @default(0)
+  total                      Decimal
+  stripe_payment_intent_id   String?
+  stripe_checkout_session_id String?
+  delivery_address           String?
+  delivery_city              String?
+  delivery_state             String?
+  delivery_zip               String?
+  special_instructions       String?
+  promo_code                 String?
+  access_token               String?
+  scheduled_for              DateTime?
+  created_at                 DateTime @default(now())
+  updated_at                 DateTime @default(now())
+
+  customer customers? @relation(fields: [customer_id], references: [id])
+  items    order_items[]
+
+  @@index([customer_id])
+}
+
+model order_items {
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_id             String   @db.Uuid
+  menu_item_id         String?  @db.Uuid
+  item_name            String
+  item_price           Decimal
+  quantity             Int      @default(1)
+  special_instructions String?
+  created_at           DateTime @default(now())
+
+  order    orders      @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  menuItem menu_items? @relation(fields: [menu_item_id], references: [id])
+
+  @@index([order_id])
+  @@index([menu_item_id])
+}
+
+model reservations {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customer_id       String?  @db.Uuid
+  customer_name     String
+  customer_email    String?
+  customer_phone    String?
+  date              String
+  time_slot         String
+  party_size        Int
+  status            String   @default("pending")
+  special_requests  String?
+  admin_notes       String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @default(now())
+
+  customer customers? @relation(fields: [customer_id], references: [id])
+
+  @@index([customer_id])
+}
+
+model staff {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  email         String   @unique
+  password_hash String
+  role          String   @default("staff")
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now())
+}
+
+model promos {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code              String   @unique
+  description       String?
+  discount_type     String   @default("percent")
+  discount_value    Decimal
+  min_order         Decimal  @default(0)
+  max_redemptions   Int?
+  times_redeemed    Int      @default(0)
+  is_active         Boolean  @default(true)
+  expires_at        DateTime?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @default(now())
+}
+
+model restaurant_settings {
+  key        String   @id
+  value      Json?
+  updated_at DateTime @default(now())
+}

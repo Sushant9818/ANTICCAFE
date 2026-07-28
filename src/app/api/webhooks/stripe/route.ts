@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { db } from "@/db";
-import { orders } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import type Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
@@ -26,15 +24,15 @@ export async function POST(req: NextRequest) {
       const session = event.data.object as Stripe.Checkout.Session;
       const orderId = session.metadata?.orderId;
       if (orderId) {
-        await db
-          .update(orders)
-          .set({
-            paymentStatus: "paid",
+        await db.orders.update({
+          where: { id: orderId },
+          data: {
+            payment_status: "paid",
             status: "confirmed",
-            stripePaymentIntentId: session.payment_intent as string,
-            updatedAt: new Date(),
-          })
-          .where(eq(orders.id, orderId));
+            stripe_payment_intent_id: session.payment_intent as string,
+            updated_at: new Date(),
+          },
+        });
       }
     }
 
@@ -42,10 +40,10 @@ export async function POST(req: NextRequest) {
       const session = event.data.object as Stripe.Checkout.Session;
       const orderId = session.metadata?.orderId;
       if (orderId) {
-        await db
-          .update(orders)
-          .set({ paymentStatus: "failed", status: "cancelled", updatedAt: new Date() })
-          .where(eq(orders.id, orderId));
+        await db.orders.update({
+          where: { id: orderId },
+          data: { payment_status: "failed", status: "cancelled", updated_at: new Date() },
+        });
       }
     }
 

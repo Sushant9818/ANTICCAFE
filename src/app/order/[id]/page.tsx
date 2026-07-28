@@ -1,6 +1,4 @@
 import { db } from "@/db";
-import { orders, orderItems } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { CheckCircle, Clock, ChefHat, PackageCheck, Bike } from "lucide-react";
 import { ORDER_STATUS_COLORS } from "@/lib/constants";
@@ -25,18 +23,55 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   let order;
   let orderItemsList;
   try {
-    [order] = await db
-      .select()
-      .from(orders)
-      .where(eq(orders.id, id))
-      .limit(1);
+    const orderRaw = await db.orders.findUnique({
+      where: { id },
+    });
 
-    if (!order) notFound();
+    if (!orderRaw) notFound();
 
-    orderItemsList = await db
-      .select()
-      .from(orderItems)
-      .where(eq(orderItems.orderId, id));
+    order = {
+      id: orderRaw.id,
+      orderNumber: orderRaw.order_number,
+      customerId: orderRaw.customer_id,
+      customerName: orderRaw.customer_name,
+      customerEmail: orderRaw.customer_email,
+      customerPhone: orderRaw.customer_phone,
+      orderType: orderRaw.order_type,
+      status: orderRaw.status,
+      paymentStatus: orderRaw.payment_status,
+      subtotal: orderRaw.subtotal.toString(),
+      tax: orderRaw.tax.toString(),
+      tip: orderRaw.tip.toString(),
+      deliveryFee: orderRaw.delivery_fee.toString(),
+      discount: orderRaw.discount.toString(),
+      total: orderRaw.total.toString(),
+      promoCode: orderRaw.promo_code,
+      stripePaymentIntentId: orderRaw.stripe_payment_intent_id,
+      stripeCheckoutSessionId: orderRaw.stripe_checkout_session_id,
+      deliveryAddress: orderRaw.delivery_address,
+      deliveryCity: orderRaw.delivery_city,
+      deliveryState: orderRaw.delivery_state,
+      deliveryZip: orderRaw.delivery_zip,
+      specialInstructions: orderRaw.special_instructions,
+      accessToken: orderRaw.access_token,
+      scheduledFor: orderRaw.scheduled_for,
+      createdAt: orderRaw.created_at,
+      updatedAt: orderRaw.updated_at,
+    };
+
+    const itemsRaw = await db.order_items.findMany({
+      where: { order_id: id },
+    });
+    orderItemsList = itemsRaw.map((i) => ({
+      id: i.id,
+      orderId: i.order_id,
+      menuItemId: i.menu_item_id,
+      itemName: i.item_name,
+      itemPrice: i.item_price.toString(),
+      quantity: i.quantity,
+      specialInstructions: i.special_instructions,
+      createdAt: i.created_at,
+    }));
   } catch {
     notFound();
   }
