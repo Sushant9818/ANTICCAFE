@@ -6,7 +6,7 @@ import { ArrowRight, Star } from "lucide-react";
 export function Hero() {
   return (
     <section className="relative overflow-hidden bg-stone-50">
-      <div className="absolute inset-0 bg-[url('/images/hero-bg.jpg')] bg-cover bg-center opacity-10" />
+      <div className="absolute inset-0 bg-[url('/images/hero-bg.png')] bg-no-repeat bg-center bg-[length:auto_85%] opacity-[0.08]" />
 
       <div className="relative container mx-auto px-4 py-20 md:py-32">
         <div className="max-w-2xl">
