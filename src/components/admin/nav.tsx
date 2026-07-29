@@ -7,6 +7,7 @@ import { useClerk } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   ClipboardList,
+  ChefHat,
   UtensilsCrossed,
   CalendarDays,
   Settings,
@@ -16,6 +17,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/admin/kitchen", label: "Kitchen", icon: ChefHat },
   { href: "/admin/orders", label: "Orders", icon: ClipboardList },
   { href: "/admin/menu", label: "Menu", icon: UtensilsCrossed },
   { href: "/admin/reservations", label: "Reservations", icon: CalendarDays },
