@@ -47,16 +47,16 @@ export function ReservationForm() {
   };
 
   return (
-    <section id="reservations" className="py-20 bg-amber-50">
+    <section id="reservations" className="py-20 bg-stone-900">
       <div className="container mx-auto px-4 max-w-xl">
         <div className="text-center mb-10">
-          <p className="text-sm font-medium text-amber-700 uppercase tracking-wider mb-2">
+          <p className="text-sm font-medium text-amber-400 uppercase tracking-wider mb-2">
             Reserve a Table
           </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-stone-900">
+          <h2 className="text-3xl md:text-4xl font-bold text-white">
             Join us for a meal
           </h2>
-          <p className="text-stone-600 mt-2 text-sm">
+          <p className="text-stone-400 mt-2 text-sm">
             Book ahead to secure your spot. We'll confirm within a few hours.
           </p>
         </div>

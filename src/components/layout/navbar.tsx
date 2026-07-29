@@ -21,7 +21,7 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-stone-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header className="sticky top-0 z-50 w-full border-b border-stone-800 bg-stone-950">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center">
           <Image
@@ -30,7 +30,7 @@ export function Navbar() {
             width={130}
             height={42}
             priority
-            className="h-10 w-auto"
+            className="h-10 w-auto brightness-0 invert"
           />
         </Link>
 
@@ -40,7 +40,7 @@ export function Navbar() {
             <Link
               key={l.href}
               href={l.href}
-              className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
+              className="text-sm font-medium text-stone-300 hover:text-amber-400 transition-colors"
             >
               {l.label}
             </Link>
@@ -50,10 +50,10 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           <Link
             href="/cart"
-            className="relative p-2 rounded-full hover:bg-stone-100 transition-colors"
+            className="relative p-2 rounded-full hover:bg-stone-800 transition-colors"
             aria-label="Cart"
           >
-            <ShoppingCart className="h-5 w-5 text-stone-700" />
+            <ShoppingCart className="h-5 w-5 text-stone-300" />
             {mounted && itemCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-700 text-[10px] font-bold text-white">
                 {itemCount > 9 ? "9+" : itemCount}
@@ -69,23 +69,23 @@ export function Navbar() {
           </Link>
 
           <button
-            className="md:hidden p-2 rounded-md hover:bg-stone-100"
+            className="md:hidden p-2 rounded-md hover:bg-stone-800"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Toggle menu"
           >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {mobileOpen ? <X className="h-5 w-5 text-stone-300" /> : <Menu className="h-5 w-5 text-stone-300" />}
           </button>
         </div>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-stone-200 bg-white px-4 py-4 space-y-3">
+        <div className="md:hidden border-t border-stone-800 bg-stone-950 px-4 py-4 space-y-3">
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className="block text-sm font-medium text-stone-700 py-1"
+              className="block text-sm font-medium text-stone-300 py-1"
               onClick={() => setMobileOpen(false)}
             >
               {l.label}

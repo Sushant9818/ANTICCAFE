@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
 import { db } from "@/db";
+import { FeaturedCard } from "@/components/home/featured-card";
 
 async function getFeaturedItems() {
   try {
@@ -149,20 +149,20 @@ export async function Featured() {
   const displayItems = items.length > 0 ? items : fallback;
 
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-stone-950">
       <div className="container mx-auto px-4">
         <div className="flex items-end justify-between mb-10">
           <div>
-            <p className="text-sm font-medium text-amber-700 uppercase tracking-wider mb-2">
+            <p className="text-sm font-medium text-amber-400 uppercase tracking-wider mb-2">
               Fan Favorites
             </p>
-            <h2 className="text-3xl md:text-4xl font-bold text-stone-900">
+            <h2 className="text-3xl md:text-4xl font-bold text-white">
               What people love
             </h2>
           </div>
           <Link
             href="/menu"
-            className="hidden sm:flex items-center gap-1 text-sm font-medium text-amber-700 hover:text-amber-800 transition-colors"
+            className="hidden sm:flex items-center gap-1 text-sm font-medium text-amber-400 hover:text-amber-300 transition-colors"
           >
             Full Menu <ArrowRight className="h-4 w-4" />
           </Link>
@@ -170,44 +170,14 @@ export async function Featured() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {displayItems.map((item) => (
-            <Link
-              key={item.id}
-              href="/menu"
-              className="group rounded-2xl border border-stone-200 overflow-hidden hover:shadow-md transition-shadow bg-white"
-            >
-              <div className="h-44 bg-stone-100 flex items-center justify-center overflow-hidden">
-                {item.image_url ? (
-                  <img
-                    src={item.image_url}
-                    alt={item.name}
-                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="text-5xl">☕</div>
-                )}
-              </div>
-              <div className="p-4">
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <h3 className="font-semibold text-stone-900 group-hover:text-amber-700 transition-colors">
-                    {item.name}
-                  </h3>
-                  <span className="text-sm font-bold text-amber-700 whitespace-nowrap">
-                    {formatPrice(Number(item.price))}
-                  </span>
-                </div>
-                <p className="text-xs text-stone-500 mb-2">{item.categoryName}</p>
-                {item.description && (
-                  <p className="text-sm text-stone-600 line-clamp-2">{item.description}</p>
-                )}
-              </div>
-            </Link>
+            <FeaturedCard key={item.id} item={item} />
           ))}
         </div>
 
         <div className="mt-8 text-center sm:hidden">
           <Link
             href="/menu"
-            className="inline-flex items-center gap-1 text-sm font-medium text-amber-700 hover:text-amber-800 transition-colors"
+            className="inline-flex items-center gap-1 text-sm font-medium text-amber-400 hover:text-amber-300 transition-colors"
           >
             View Full Menu <ArrowRight className="h-4 w-4" />
           </Link>

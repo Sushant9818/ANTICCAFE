@@ -25,16 +25,16 @@ const pillars = [
 
 export function AboutStrip() {
   return (
-    <section className="py-16 bg-amber-50">
+    <section className="py-16 bg-stone-900">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {pillars.map(({ icon: Icon, title, desc }) => (
             <div key={title} className="text-center">
-              <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-amber-100 text-amber-700 mb-4 mx-auto">
+              <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-stone-800 text-amber-400 mb-4 mx-auto">
                 <Icon className="h-5 w-5" />
               </div>
-              <h3 className="font-semibold text-stone-900 mb-1">{title}</h3>
-              <p className="text-sm text-stone-600 leading-relaxed">{desc}</p>
+              <h3 className="font-semibold text-white mb-1">{title}</h3>
+              <p className="text-sm text-stone-400 leading-relaxed">{desc}</p>
             </div>
           ))}
         </div>

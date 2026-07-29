@@ -23,13 +23,13 @@ const testimonials = [
 
 export function Testimonials() {
   return (
-    <section className="py-20 bg-stone-50">
+    <section className="py-20 bg-stone-900">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <p className="text-sm font-medium text-amber-700 uppercase tracking-wider mb-2">
+          <p className="text-sm font-medium text-amber-400 uppercase tracking-wider mb-2">
             Guest Love
           </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-stone-900">
+          <h2 className="text-3xl md:text-4xl font-bold text-white">
             What our guests say
           </h2>
         </div>
@@ -37,15 +37,15 @@ export function Testimonials() {
           {testimonials.map((t) => (
             <div
               key={t.id}
-              className="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm"
+              className="bg-stone-950 rounded-2xl p-6 border border-stone-800"
             >
               <div className="flex gap-1 mb-3">
                 {[...Array(t.rating)].map((_, i) => (
                   <Star key={i} className="h-4 w-4 fill-amber-500 text-amber-500" />
                 ))}
               </div>
-              <p className="text-stone-700 text-sm leading-relaxed mb-4">"{t.text}"</p>
-              <p className="text-sm font-semibold text-stone-900">— {t.name}</p>
+              <p className="text-stone-300 text-sm leading-relaxed mb-4">"{t.text}"</p>
+              <p className="text-sm font-semibold text-white">— {t.name}</p>
             </div>
           ))}
         </div>

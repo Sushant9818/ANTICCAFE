@@ -10,20 +10,20 @@ const POSTS: string[] = [
 
 export function InstagramFeed() {
   return (
-    <section className="py-20 bg-stone-50">
+    <section className="py-20 bg-stone-950">
       <div className="container mx-auto px-4">
         <div className="text-center mb-10">
-          <p className="text-sm font-medium text-amber-700 uppercase tracking-wider mb-2">
+          <p className="text-sm font-medium text-amber-400 uppercase tracking-wider mb-2">
             Follow Along
           </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-stone-900 mb-3">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
             We&apos;re on Instagram
           </h2>
           <a
             href="https://www.instagram.com/antic.cafez/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-stone-500 hover:text-amber-700 transition-colors text-sm"
+            className="inline-flex items-center gap-2 text-stone-400 hover:text-amber-400 transition-colors text-sm"
           >
             <Instagram className="h-4 w-4" />
             @antic.cafez
