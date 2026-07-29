@@ -14,6 +14,7 @@ export function Navbar() {
   useEffect(() => { setMounted(true); }, []);
 
   const links = [
+    { href: "/", label: "Home" },
     { href: "/menu", label: "Menu" },
     { href: "/about", label: "About" },
     { href: "/#reservations", label: "Reservations" },
