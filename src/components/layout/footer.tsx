@@ -23,10 +23,26 @@ export function Footer() {
               className="h-9 w-auto brightness-0 invert"
             />
           </div>
-          <p className="text-sm leading-relaxed text-stone-400">
+          <p className="text-sm leading-relaxed text-stone-400 mb-4">
             Bhaktapur&apos;s favourite breakfast & brunch spot — artisan coffee,
             fresh morning plates, and good vibes every day.
           </p>
+          <a
+            href="https://www.facebook.com/people/Antic-Cafez/61580506635268/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Facebook"
+            className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-stone-800 text-stone-300 hover:bg-amber-700 hover:text-white transition-colors"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="h-4 w-4"
+              aria-hidden="true"
+            >
+              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+            </svg>
+          </a>
         </div>
 
         <div>
