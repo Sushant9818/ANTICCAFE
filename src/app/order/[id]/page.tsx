@@ -55,6 +55,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       specialInstructions: orderRaw.special_instructions,
       accessToken: orderRaw.access_token,
       scheduledFor: orderRaw.scheduled_for,
+      estimatedReadyAt: orderRaw.estimated_ready_at,
       createdAt: orderRaw.created_at,
       updatedAt: orderRaw.updated_at,
     };
@@ -95,6 +96,12 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         >
           {order.status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
         </span>
+        {order.estimatedReadyAt && (order.status === "confirmed" || order.status === "preparing") && (
+          <p className="text-sm text-amber-700 font-medium mt-2">
+            Estimated ready by{" "}
+            {new Date(order.estimatedReadyAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          </p>
+        )}
       </div>
 
       {/* Progress bar */}
