@@ -37,9 +37,12 @@ export default async function AdminKitchenPage() {
   const ordersList = await getPendingOrders();
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold text-stone-900 mb-6">Kitchen</h1>
-      <KitchenBoard initialOrders={ordersList} />
+    <div className="relative overflow-hidden">
+      <div className="absolute inset-0 bg-[url('/images/hero-bg.png')] bg-no-repeat bg-center bg-[length:auto_70%] opacity-[0.06]" />
+      <div className="relative p-8">
+        <h1 className="text-2xl font-bold text-stone-900 mb-6">Kitchen</h1>
+        <KitchenBoard initialOrders={ordersList} />
+      </div>
     </div>
   );
 }

@@ -67,14 +67,16 @@ export default async function MenuPage() {
   const { categories, items } = await getMenuData();
 
   return (
-    <div className="container mx-auto px-4 py-10">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-stone-900 mb-2">Our Menu</h1>
-        <p className="text-stone-600">
-          Everything made fresh, every day. Order online for pickup or delivery.
-        </p>
+    <div className="bg-stone-950 min-h-screen">
+      <div className="container mx-auto px-4 py-10">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-white mb-2">Our Menu</h1>
+          <p className="text-stone-300">
+            Everything made fresh, every day. Order online for pickup or delivery.
+          </p>
+        </div>
+        <MenuGrid categories={categories} items={items} />
       </div>
-      <MenuGrid categories={categories} items={items} />
     </div>
   );
 }

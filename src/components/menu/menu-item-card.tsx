@@ -24,8 +24,8 @@ export function MenuItemCard({ item }: Props) {
   };
 
   return (
-    <div className="group rounded-2xl border border-stone-200 bg-white overflow-hidden hover:shadow-md transition-shadow">
-      <div className="h-44 bg-stone-100 flex items-center justify-center overflow-hidden">
+    <div className="group rounded-2xl border border-stone-800 bg-stone-900 overflow-hidden hover:shadow-md hover:shadow-black/30 transition-shadow">
+      <div className="h-44 bg-stone-800 flex items-center justify-center overflow-hidden">
         {item.imageUrl ? (
           <img
             src={item.imageUrl}
@@ -39,16 +39,16 @@ export function MenuItemCard({ item }: Props) {
 
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="font-semibold text-stone-900">{item.name}</h3>
-          <span className="text-sm font-bold text-amber-700 whitespace-nowrap">
+          <h3 className="font-semibold text-white">{item.name}</h3>
+          <span className="text-sm font-bold text-amber-400 whitespace-nowrap">
             {formatPrice(Number(item.price))}
           </span>
         </div>
 
-        <p className="text-xs text-stone-400 mb-2">{item.category.name}</p>
+        <p className="text-xs text-stone-500 mb-2">{item.category.name}</p>
 
         {item.description && (
-          <p className="text-sm text-stone-600 line-clamp-2 mb-3">{item.description}</p>
+          <p className="text-sm text-stone-400 line-clamp-2 mb-3">{item.description}</p>
         )}
 
         <div className="flex items-center justify-between">

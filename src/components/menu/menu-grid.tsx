@@ -28,7 +28,7 @@ export function MenuGrid({ categories, items }: Props) {
           className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
             activeCategory === "all"
               ? "bg-amber-700 text-white"
-              : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+              : "bg-stone-900 text-stone-300 hover:bg-stone-800"
           }`}
         >
           All
@@ -40,7 +40,7 @@ export function MenuGrid({ categories, items }: Props) {
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               activeCategory === cat.id
                 ? "bg-amber-700 text-white"
-                : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                : "bg-stone-900 text-stone-300 hover:bg-stone-800"
             }`}
           >
             {cat.name}
