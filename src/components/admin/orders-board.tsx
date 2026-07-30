@@ -40,7 +40,6 @@ type Props = {
 };
 
 const STATUS_FLOW: Record<string, string> = {
-  pending: "confirmed",
   confirmed: "preparing",
   preparing: "ready",
   ready: "out_for_delivery",

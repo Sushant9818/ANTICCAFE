@@ -5,7 +5,7 @@ import { z } from "zod";
 const schema = z.object({
   status: z.enum(["pending", "confirmed", "preparing", "ready", "out_for_delivery", "delivered", "cancelled"]).optional(),
   paymentStatus: z.enum(["pending", "paid", "refunded", "failed"]).optional(),
-  estimatedMinutes: z.number().int().positive().optional(),
+  estimatedMinutes: z.number().int().positive().max(240).optional(),
 });
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
