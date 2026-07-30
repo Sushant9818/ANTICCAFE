@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Phone, MapPin, Clock } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
-import { ORDER_STATUSES, ORDER_STATUS_COLORS } from "@/lib/constants";
+import { ORDER_STATUSES } from "@/lib/constants";
 
 type OrderItem = {
   id: string;
@@ -53,6 +53,12 @@ const UPDATE_TOAST_LABEL: Record<UpdateBody["status"], string> = {
   preparing: "moved to preparing",
   ready: "marked ready",
   cancelled: "rejected",
+};
+
+const STATUS_BADGE_COLORS: Record<string, string> = {
+  pending: "bg-amber-900 text-amber-200",
+  confirmed: "bg-blue-900 text-blue-300",
+  preparing: "bg-orange-900 text-orange-300",
 };
 
 function formatTime(date: Date) {
@@ -129,7 +135,7 @@ export function KitchenBoard({ initialOrders }: Props) {
                     </div>
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize whitespace-nowrap ${
-                        ORDER_STATUS_COLORS[order.status] ?? "bg-stone-800 text-stone-300"
+                        STATUS_BADGE_COLORS[order.status] ?? "bg-stone-800 text-stone-300"
                       }`}
                     >
                       {ORDER_STATUSES[order.status as keyof typeof ORDER_STATUSES] ?? order.status}
