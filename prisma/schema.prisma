@@ -86,6 +86,7 @@ model orders {
   promo_code                 String?
   access_token               String?
   scheduled_for              DateTime?
+  estimated_ready_at         DateTime?
   created_at                 DateTime @default(now())
   updated_at                 DateTime @default(now())
 
