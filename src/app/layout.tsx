@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/sonner";
 import { Navbar } from "@/components/layout/navbar";
+import { PromoBar } from "@/components/layout/promo-bar";
 import { Footer } from "@/components/layout/footer";
 import "./globals.css";
 
@@ -32,6 +33,7 @@ export default function RootLayout({
       <html lang="en" className={`${geist.variable} h-full antialiased`}>
         <body className="min-h-full flex flex-col font-[family-name:var(--font-geist-sans)]">
           <Navbar />
+          <PromoBar />
           <main className="flex-1">{children}</main>
           <Footer />
           <Toaster richColors position="top-center" />
