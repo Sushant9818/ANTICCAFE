@@ -1,4 +1,4 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkClient, clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)", "/api/admin(.*)"]);
@@ -7,7 +7,7 @@ export default clerkMiddleware(async (auth, req) => {
   if (!isAdminRoute(req)) return;
 
   const isApi = req.nextUrl.pathname.startsWith("/api/admin");
-  const { userId, sessionClaims } = await auth();
+  const { userId } = await auth();
 
   if (!userId) {
     if (isApi) {
@@ -21,7 +21,10 @@ export default clerkMiddleware(async (auth, req) => {
     .split(",")
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
-  const email = (sessionClaims?.email as string | undefined)?.toLowerCase();
+
+  const client = await clerkClient();
+  const user = await client.users.getUser(userId);
+  const email = user.primaryEmailAddress?.emailAddress.toLowerCase();
 
   if (!email || !allowedEmails.includes(email)) {
     if (isApi) {
