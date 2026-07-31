@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -72,8 +72,11 @@ export default function CheckoutPage() {
     setForm((f) => ({ ...f, promoCode: "" }));
   };
 
+  useEffect(() => {
+    if (items.length === 0) router.push("/cart");
+  }, [items.length, router]);
+
   if (items.length === 0) {
-    router.push("/cart");
     return null;
   }
 
