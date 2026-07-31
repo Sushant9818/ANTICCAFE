@@ -2,16 +2,27 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, Menu, X } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { ShoppingCart, Menu, X, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useCart } from "@/lib/cart-store";
+import { useClerk } from "@clerk/nextjs";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const itemCount = useCart((s) => s.itemCount());
+  const pathname = usePathname();
+  const isAdmin = pathname.startsWith("/admin");
+  const router = useRouter();
+  const { signOut } = useClerk();
 
   useEffect(() => { setMounted(true); }, []);
+
+  async function handleLogout() {
+    await signOut();
+    router.push("/login");
+  }
 
   const links = [
     { href: "/", label: "Home" },
@@ -49,25 +60,37 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/cart"
-            className="relative p-2 rounded-full hover:bg-stone-800 transition-colors"
-            aria-label="Cart"
-          >
-            <ShoppingCart className="h-5 w-5 text-stone-300" />
-            {mounted && itemCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-700 text-[10px] font-bold text-white">
-                {itemCount > 9 ? "9+" : itemCount}
-              </span>
-            )}
-          </Link>
+          {isAdmin ? (
+            <button
+              onClick={handleLogout}
+              className="hidden md:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-amber-700 text-white text-sm font-medium hover:bg-amber-800 transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </button>
+          ) : (
+            <>
+              <Link
+                href="/cart"
+                className="relative p-2 rounded-full hover:bg-stone-800 transition-colors"
+                aria-label="Cart"
+              >
+                <ShoppingCart className="h-5 w-5 text-stone-300" />
+                {mounted && itemCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-700 text-[10px] font-bold text-white">
+                    {itemCount > 9 ? "9+" : itemCount}
+                  </span>
+                )}
+              </Link>
 
-          <Link
-            href="/menu"
-            className="hidden md:inline-flex items-center px-4 py-2 rounded-full bg-amber-700 text-white text-sm font-medium hover:bg-amber-800 transition-colors"
-          >
-            Order Now
-          </Link>
+              <Link
+                href="/menu"
+                className="hidden md:inline-flex items-center px-4 py-2 rounded-full bg-amber-700 text-white text-sm font-medium hover:bg-amber-800 transition-colors"
+              >
+                Order Now
+              </Link>
+            </>
+          )}
 
           <button
             className="md:hidden p-2 rounded-md hover:bg-stone-800"
@@ -92,13 +115,26 @@ export function Navbar() {
               {l.label}
             </Link>
           ))}
-          <Link
-            href="/menu"
-            className="block w-full text-center px-4 py-2 rounded-full bg-amber-700 text-white text-sm font-medium"
-            onClick={() => setMobileOpen(false)}
-          >
-            Order Now
-          </Link>
+          {isAdmin ? (
+            <button
+              onClick={() => {
+                setMobileOpen(false);
+                handleLogout();
+              }}
+              className="flex w-full items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-amber-700 text-white text-sm font-medium"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </button>
+          ) : (
+            <Link
+              href="/menu"
+              className="block w-full text-center px-4 py-2 rounded-full bg-amber-700 text-white text-sm font-medium"
+              onClick={() => setMobileOpen(false)}
+            >
+              Order Now
+            </Link>
+          )}
         </div>
       )}
     </header>
