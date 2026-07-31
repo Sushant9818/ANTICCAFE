@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       const session = event.data.object as Stripe.Checkout.Session;
       const orderId = session.metadata?.orderId;
       if (orderId) {
-        await db.orders.update({
+        const order = await db.orders.update({
           where: { id: orderId },
           data: {
             payment_status: "paid",
@@ -33,6 +33,13 @@ export async function POST(req: NextRequest) {
             updated_at: new Date(),
           },
         });
+
+        if (order.promo_code) {
+          await db.promos.update({
+            where: { code: order.promo_code },
+            data: { times_redeemed: { increment: 1 } },
+          });
+        }
       }
     }
 

@@ -28,12 +28,49 @@ export default function CheckoutPage() {
     specialInstructions: "",
     promoCode: "",
   });
+  const [promoInput, setPromoInput] = useState("");
+  const [promoApplying, setPromoApplying] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discountAmount: number } | null>(null);
 
   const subtotal = getSubtotal();
-  const tax = subtotal * TAX_RATE;
+  const discount = appliedPromo?.discountAmount ?? 0;
+  const discountedSubtotal = subtotal - discount;
+  const tax = discountedSubtotal * TAX_RATE;
   const delivery = orderType === "delivery" && subtotal < FREE_DELIVERY_THRESHOLD ? DELIVERY_FEE : 0;
   const tip = (subtotal * tipPercent) / 100;
-  const total = subtotal + tax + delivery + tip;
+  const total = discountedSubtotal + tax + delivery + tip;
+
+  const applyPromo = async () => {
+    if (!promoInput.trim()) return;
+    setPromoApplying(true);
+    setPromoError(null);
+    try {
+      const res = await fetch("/api/checkout/validate-promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: promoInput, subtotal }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Invalid promo code");
+      setAppliedPromo({ code: data.code, discountAmount: data.discountAmount });
+      setForm((f) => ({ ...f, promoCode: data.code }));
+      toast.success(`Promo code ${data.code} applied`);
+    } catch (err) {
+      setAppliedPromo(null);
+      setForm((f) => ({ ...f, promoCode: "" }));
+      setPromoError(err instanceof Error ? err.message : "Invalid promo code");
+    } finally {
+      setPromoApplying(false);
+    }
+  };
+
+  const removePromo = () => {
+    setAppliedPromo(null);
+    setPromoInput("");
+    setPromoError(null);
+    setForm((f) => ({ ...f, promoCode: "" }));
+  };
 
   if (items.length === 0) {
     router.push("/cart");
@@ -204,6 +241,55 @@ export default function CheckoutPage() {
               )}
             </div>
 
+            {/* Promo code */}
+            <div className="bg-white rounded-2xl border border-stone-200 p-6">
+              <h2 className="font-semibold text-stone-900 mb-4">Promo Code</h2>
+              {appliedPromo ? (
+                <div className="flex items-center justify-between rounded-lg bg-green-50 border border-green-200 px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-green-800">
+                      {appliedPromo.code} applied
+                    </p>
+                    <p className="text-xs text-green-700">
+                      -{formatPrice(appliedPromo.discountAmount)} off your order
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={removePromo}
+                    className="text-xs font-medium text-green-800 hover:underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={promoInput}
+                      onChange={(e) => {
+                        setPromoInput(e.target.value.toUpperCase());
+                        setPromoError(null);
+                      }}
+                      placeholder="Enter promo code"
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      onClick={applyPromo}
+                      disabled={promoApplying || !promoInput.trim()}
+                      variant="outline"
+                    >
+                      {promoApplying ? "Applying…" : "Apply"}
+                    </Button>
+                  </div>
+                  {promoError && (
+                    <p className="text-xs text-red-600 mt-2">{promoError}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Special instructions */}
             <div className="bg-white rounded-2xl border border-stone-200 p-6">
               <h2 className="font-semibold text-stone-900 mb-4">Order Notes</h2>
@@ -240,6 +326,12 @@ export default function CheckoutPage() {
                   <span>Subtotal</span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-green-700">
+                    <span>Discount ({appliedPromo?.code})</span>
+                    <span>-{formatPrice(discount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-stone-600">
                   <span>Tax</span>
                   <span>{formatPrice(tax)}</span>

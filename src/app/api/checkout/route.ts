@@ -3,6 +3,7 @@ import { z } from "zod";
 import { stripe } from "@/lib/stripe";
 import { db } from "@/db";
 import { TAX_RATE, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD } from "@/lib/constants";
+import { validatePromo } from "@/lib/promo";
 import { randomBytes } from "crypto";
 
 const schema = z.object({
@@ -33,10 +34,23 @@ export async function POST(req: NextRequest) {
     const data = schema.parse(body);
 
     const subtotal = data.items.reduce((s, i) => s + i.price * i.quantity, 0);
-    const tax = subtotal * TAX_RATE;
+
+    let discount = 0;
+    let promoCode: string | null = null;
+    if (data.promoCode?.trim()) {
+      const result = await validatePromo(data.promoCode, subtotal);
+      if (!result.ok) {
+        return NextResponse.json({ error: result.error }, { status: 400 });
+      }
+      discount = result.discountAmount;
+      promoCode = result.code;
+    }
+
+    const discountedSubtotal = subtotal - discount;
+    const tax = discountedSubtotal * TAX_RATE;
     const delivery = data.orderType === "delivery" && subtotal < FREE_DELIVERY_THRESHOLD ? DELIVERY_FEE : 0;
     const tip = parseFloat(data.tip ?? "0") || 0;
-    const total = subtotal + tax + delivery + tip;
+    const total = discountedSubtotal + tax + delivery + tip;
 
     const accessToken = randomBytes(20).toString("hex");
 
@@ -53,13 +67,14 @@ export async function POST(req: NextRequest) {
         tax: tax.toFixed(2),
         tip: tip.toFixed(2),
         delivery_fee: delivery.toFixed(2),
+        discount: discount.toFixed(2),
         total: total.toFixed(2),
         delivery_address: data.deliveryAddress || null,
         delivery_city: data.deliveryCity || null,
         delivery_state: data.deliveryState || null,
         delivery_zip: data.deliveryZip || null,
         special_instructions: data.specialInstructions || null,
-        promo_code: data.promoCode || null,
+        promo_code: promoCode,
         access_token: accessToken,
       },
     });
@@ -77,10 +92,22 @@ export async function POST(req: NextRequest) {
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
+    let discounts: { coupon: string }[] | undefined;
+    if (discount > 0) {
+      const coupon = await stripe.coupons.create({
+        amount_off: Math.round(discount * 100),
+        currency: "usd",
+        duration: "once",
+        name: promoCode ?? "Discount",
+      });
+      discounts = [{ coupon: coupon.id }];
+    }
+
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
+      discounts,
       line_items: [
         ...data.items.map((item) => ({
           price_data: {
