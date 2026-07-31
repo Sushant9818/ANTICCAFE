@@ -18,6 +18,7 @@ export function Navbar() {
     { href: "/menu", label: "Menu" },
     { href: "/about", label: "About" },
     { href: "/#reservations", label: "Reservations" },
+    { href: "/admin/kitchen", label: "Kitchen" },
   ];
 
   return (

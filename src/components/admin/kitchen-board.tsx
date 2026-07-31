@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Phone, MapPin, Clock } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
@@ -41,6 +41,7 @@ type UpdateBody =
   | { status: "cancelled" };
 
 const PREP_MINUTES = [10, 15, 20, 30];
+const POLL_INTERVAL_MS = 15_000;
 
 const SECTIONS: { key: "pending" | "confirmed" | "preparing"; title: string }[] = [
   { key: "pending", title: "Pending" },
@@ -68,6 +69,22 @@ function formatTime(date: Date) {
 export function KitchenBoard({ initialOrders }: Props) {
   const [orders, setOrders] = useState(initialOrders);
   const [pickingId, setPickingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const res = await fetch("/api/admin/orders/kitchen");
+        if (!res.ok) return;
+        const data: Order[] = await res.json();
+        setOrders(data);
+      } catch {
+        // transient network/poll failure — try again next interval
+      }
+    };
+
+    const interval = setInterval(poll, POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, []);
 
   const updateOrder = async (orderId: string, body: UpdateBody) => {
     try {
