@@ -47,6 +47,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex bg-stone-950">
       <div className="hidden md:block md:w-1/2 relative overflow-hidden bg-gradient-to-br from-amber-950 via-stone-900 to-stone-950">
+        <div className="absolute inset-0 bg-[url('/images/antic-cafez-logo.png')] bg-no-repeat bg-center bg-[length:auto_60%] opacity-30 mix-blend-multiply" />
         <svg
           className="absolute inset-0 h-full w-full opacity-[0.08]"
           viewBox="0 0 400 800"
@@ -74,18 +75,17 @@ export default function LoginPage() {
           </svg>
         </div>
 
-        <div className="relative h-full flex flex-col p-10">
-          <span className="text-sm font-semibold tracking-widest text-amber-200/80 uppercase">
-            AnticCafe
-          </span>
-
-          <div className="mt-auto space-y-4 max-w-sm">
-            <p className="text-amber-200/70 text-sm">Nice to see you again</p>
-            <h1 className="text-4xl font-bold text-white leading-tight">
+        <div className="relative h-full flex flex-col items-center justify-center text-center p-10">
+          <div className="space-y-7 max-w-lg">
+            <span className="text-4xl font-semibold tracking-widest text-amber-200/80 uppercase">
+              AnticCafe
+            </span>
+            <p className="text-amber-200/70 text-xl">Nice to see you again</p>
+            <h1 className="text-8xl font-bold text-white leading-none">
               Welcome back
             </h1>
-            <div className="h-1 w-12 bg-amber-500 rounded-full" />
-            <p className="text-stone-400 text-sm leading-relaxed">
+            <div className="h-2 w-20 bg-amber-500 rounded-full mx-auto" />
+            <p className="text-stone-400 text-xl leading-relaxed">
               Sign in to manage orders, the kitchen board, and the menu.
             </p>
           </div>
