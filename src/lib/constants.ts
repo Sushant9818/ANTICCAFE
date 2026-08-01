@@ -2,12 +2,12 @@ export const CAFE_NAME = "AnticCafe";
 export const CAFE_TAGLINE = "Breakfast & Brunch · Coffee · Good Vibes";
 export const CAFE_DESCRIPTION =
   "Your favourite spot for breakfast and brunch in Bhaktapur — fresh-cooked morning plates, artisan coffee, and a warm vibe that makes every morning worth waking up for.";
-export const CAFE_ADDRESS = "Dibyasori Planning, Pepsicola, Bhaktapur, Nepal";
-export const CAFE_PHONE = "(555) 123-4567";
+export const CAFE_ADDRESS = "M9P8+5C7, Madhyapur Thimi 44600, Nepal";
+export const CAFE_PHONE = "+977 986-0528862";
 export const CAFE_EMAIL = "hello@anticcafe.com";
 export const CAFE_HOURS = {
-  weekdays: "Mon – Fri: 7:00 AM – 8:00 PM",
-  weekends: "Sat – Sun: 8:00 AM – 9:00 PM",
+  weekdays: "Open Daily",
+  weekends: "7:00 AM – 9:00 PM",
 };
 
 export const TAX_RATE = 0.0875; // 8.75%

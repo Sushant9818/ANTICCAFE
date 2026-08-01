@@ -56,7 +56,7 @@ export function Visit() {
           <div className="h-72 md:h-80 rounded-2xl overflow-hidden border border-stone-800">
             <iframe
               title="AnticCafe location"
-              src="https://maps.google.com/maps?q=Dibyasori+Planning,+Pepsicola,+Bhaktapur,+Nepal&output=embed"
+              src="https://maps.google.com/maps?q=Antic+Cafez,+M9P8%2B5C7,+Madhyapur+Thimi+44600,+Nepal&output=embed"
               width="100%"
               height="100%"
               style={{ border: 0 }}
