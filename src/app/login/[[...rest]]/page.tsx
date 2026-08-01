@@ -47,7 +47,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex bg-stone-950">
       <div className="hidden md:block md:w-1/2 relative overflow-hidden bg-gradient-to-br from-amber-950 via-stone-900 to-stone-950">
-        <div className="absolute inset-0 bg-[url('/images/antic-cafez-logo.png')] bg-no-repeat bg-center bg-[length:auto_60%] opacity-30 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-[url('/images/antic-cafez-logo-transparent.png')] bg-no-repeat bg-center bg-[length:auto_60%] opacity-20" />
         <svg
           className="absolute inset-0 h-full w-full opacity-[0.08]"
           viewBox="0 0 400 800"
