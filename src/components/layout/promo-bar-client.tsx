@@ -1,41 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { X } from "lucide-react";
 
 type Props = {
-  id: string;
-  message: string;
+  messages: string[];
 };
 
-const DISMISS_KEY_PREFIX = "anticcafe-promo-dismissed:";
-
-export function PromoBarClient({ id, message }: Props) {
-  const [dismissed, setDismissed] = useState(true);
+export function PromoBarClient({ messages }: Props) {
   const pathname = usePathname();
 
-  useEffect(() => {
-    setDismissed(sessionStorage.getItem(DISMISS_KEY_PREFIX + id) === "1");
-  }, [id]);
+  if (pathname.startsWith("/admin")) return null;
 
-  if (dismissed || pathname.startsWith("/admin")) return null;
+  const totalLength = messages.join("").length;
+  const duration = Math.max(8, totalLength * 0.2);
 
   return (
-    <div className="relative bg-amber-700 text-white">
-      <div className="container mx-auto flex items-center justify-center gap-3 px-10 py-2 text-sm font-medium text-center">
-        <span>{message}</span>
-      </div>
-      <button
-        onClick={() => {
-          sessionStorage.setItem(DISMISS_KEY_PREFIX + id, "1");
-          setDismissed(true);
-        }}
-        aria-label="Dismiss promo"
-        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-amber-800 transition-colors"
+    <div className="sticky top-16 z-40 bg-amber-700 text-white overflow-hidden h-9 flex items-center">
+      <div
+        className="flex items-center whitespace-nowrap text-sm font-medium animate-marquee-rtl"
+        style={{ animationDuration: `${duration}s` }}
       >
-        <X className="h-4 w-4" />
-      </button>
+        {messages.map((msg, i) => (
+          <span key={i} className="flex items-center">
+            <span>{msg}</span>
+            <span className="mx-10 opacity-60">•</span>
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

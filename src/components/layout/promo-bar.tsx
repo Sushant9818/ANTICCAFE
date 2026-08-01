@@ -7,7 +7,7 @@ function formatDiscount(type: string, value: string) {
 }
 
 export async function PromoBar() {
-  const promo = await db.promos.findFirst({
+  const promos = await db.promos.findMany({
     where: {
       is_active: true,
       OR: [{ expires_at: null }, { expires_at: { gt: new Date() } }],
@@ -15,15 +15,18 @@ export async function PromoBar() {
     orderBy: { created_at: "desc" },
   });
 
-  if (!promo) return null;
-  if (promo.max_redemptions !== null && promo.times_redeemed >= promo.max_redemptions) {
-    return null;
-  }
+  const active = promos.filter(
+    (p) => p.max_redemptions === null || p.times_redeemed < p.max_redemptions
+  );
 
-  const discount = formatDiscount(promo.discount_type, promo.discount_value.toString());
-  const message = promo.description
-    ? `${promo.description} — use code ${promo.code}`
-    : `${discount} — use code ${promo.code}`;
+  if (active.length === 0) return null;
 
-  return <PromoBarClient id={promo.id} message={message} />;
+  const messages = active.map((promo) => {
+    const discount = formatDiscount(promo.discount_type, promo.discount_value.toString());
+    return promo.description
+      ? `${promo.description} — use code ${promo.code}`
+      : `${discount} — use code ${promo.code}`;
+  });
+
+  return <PromoBarClient messages={messages} />;
 }
