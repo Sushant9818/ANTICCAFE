@@ -4,6 +4,8 @@ import { stripe } from "@/lib/stripe";
 import { db } from "@/db";
 import { TAX_RATE, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD } from "@/lib/constants";
 import { validatePromo } from "@/lib/promo";
+import { buildEsewaForm } from "@/lib/esewa";
+import { initiateKhaltiPayment } from "@/lib/khalti";
 import { randomBytes } from "crypto";
 
 const schema = z.object({
@@ -16,6 +18,7 @@ const schema = z.object({
     })
   ).min(1),
   orderType: z.enum(["pickup", "delivery"]),
+  paymentMethod: z.enum(["card", "cash", "esewa", "khalti"]).default("card"),
   customerName: z.string().min(1),
   customerEmail: z.string().email().optional().or(z.literal("")),
   customerPhone: z.string().min(1),
@@ -32,6 +35,13 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const data = schema.parse(body);
+
+    if (data.paymentMethod === "cash" && data.orderType !== "pickup") {
+      return NextResponse.json(
+        { error: "Cash payment is only available for pickup orders" },
+        { status: 400 }
+      );
+    }
 
     const subtotal = data.items.reduce((s, i) => s + i.price * i.quantity, 0);
 
@@ -63,6 +73,7 @@ export async function POST(req: NextRequest) {
         order_type: data.orderType,
         status: "pending",
         payment_status: "pending",
+        payment_method: data.paymentMethod,
         subtotal: subtotal.toFixed(2),
         tax: tax.toFixed(2),
         tip: tip.toFixed(2),
@@ -90,7 +101,50 @@ export async function POST(req: NextRequest) {
       })),
     });
 
+    if (data.paymentMethod === "cash") {
+      return NextResponse.json({ orderId: order.id });
+    }
+
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+
+    if (data.paymentMethod === "esewa") {
+      await db.orders.update({
+        where: { id: order.id },
+        data: { esewa_transaction_uuid: order.id },
+      });
+
+      const esewaForm = buildEsewaForm({
+        transactionUuid: order.id,
+        amount: discountedSubtotal + tip,
+        taxAmount: tax,
+        deliveryCharge: delivery,
+        totalAmount: total,
+        successUrl: `${baseUrl}/api/checkout/esewa/return`,
+        failureUrl: `${baseUrl}/checkout?cancelled=1`,
+      });
+
+      return NextResponse.json({ esewaForm });
+    }
+
+    if (data.paymentMethod === "khalti") {
+      const khalti = await initiateKhaltiPayment({
+        amountRupees: total,
+        purchaseOrderId: order.id,
+        purchaseOrderName: `Order #${order.order_number}`,
+        returnUrl: `${baseUrl}/api/checkout/khalti/return`,
+        websiteUrl: baseUrl,
+        customerName: data.customerName,
+        customerEmail: data.customerEmail || undefined,
+        customerPhone: data.customerPhone,
+      });
+
+      await db.orders.update({
+        where: { id: order.id },
+        data: { khalti_pidx: khalti.pidx },
+      });
+
+      return NextResponse.json({ url: khalti.payment_url });
+    }
 
     let discounts: { coupon: string }[] | undefined;
     if (discount > 0) {

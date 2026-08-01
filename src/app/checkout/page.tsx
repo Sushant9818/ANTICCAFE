@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,23 @@ import { TAX_RATE, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD } from "@/lib/constants
 import { formatPrice } from "@/lib/utils";
 
 const TIP_OPTIONS = [0, 10, 15, 20, 25];
+
+function submitEsewaForm(esewaForm: { url: string; fields: Record<string, string> }) {
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = esewaForm.url;
+
+  for (const [name, value] of Object.entries(esewaForm.fields)) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  }
+
+  document.body.appendChild(form);
+  form.submit();
+}
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -28,6 +45,7 @@ export default function CheckoutPage() {
     specialInstructions: "",
     promoCode: "",
   });
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "cash" | "esewa" | "khalti">("card");
   const [promoInput, setPromoInput] = useState("");
   const [promoApplying, setPromoApplying] = useState(false);
   const [promoError, setPromoError] = useState<string | null>(null);
@@ -72,9 +90,15 @@ export default function CheckoutPage() {
     setForm((f) => ({ ...f, promoCode: "" }));
   };
 
+  const orderPlacedRef = useRef(false);
+
   useEffect(() => {
-    if (items.length === 0) router.push("/cart");
+    if (items.length === 0 && !orderPlacedRef.current) router.push("/cart");
   }, [items.length, router]);
+
+  useEffect(() => {
+    if (orderType !== "pickup" && paymentMethod === "cash") setPaymentMethod("card");
+  }, [orderType, paymentMethod]);
 
   if (items.length === 0) {
     return null;
@@ -94,6 +118,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           items,
           orderType,
+          paymentMethod,
           customerName: form.name,
           customerEmail: form.email,
           customerPhone: form.phone,
@@ -110,9 +135,18 @@ export default function CheckoutPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Checkout failed");
 
-      if (data.url) {
+      if (data.esewaForm) {
+        orderPlacedRef.current = true;
+        clearCart();
+        submitEsewaForm(data.esewaForm);
+      } else if (data.url) {
+        orderPlacedRef.current = true;
         clearCart();
         router.push(data.url);
+      } else if (data.orderId) {
+        orderPlacedRef.current = true;
+        clearCart();
+        router.push(`/order/${data.orderId}?cash=1`);
       } else {
         throw new Error("No checkout URL returned");
       }
@@ -217,6 +251,51 @@ export default function CheckoutPage() {
                 </div>
               </div>
             )}
+
+            {/* Payment method */}
+            <div className="bg-white rounded-2xl border border-stone-200 p-6">
+              <h2 className="font-semibold text-stone-900 mb-4">Payment Method</h2>
+              <div className="flex gap-2 flex-wrap">
+                {(
+                  [
+                    { key: "card", label: "Card" },
+                    { key: "esewa", label: "eSewa" },
+                    { key: "khalti", label: "Khalti" },
+                    ...(orderType === "pickup"
+                      ? [{ key: "cash" as const, label: "Cash at Pickup" }]
+                      : []),
+                  ] as const
+                ).map((opt) => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setPaymentMethod(opt.key)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                      paymentMethod === opt.key
+                        ? "bg-amber-700 text-white border-amber-700"
+                        : "border-stone-200 text-stone-600 hover:border-stone-300"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              {paymentMethod === "cash" && (
+                <p className="text-sm text-stone-500 mt-2">
+                  Have exact change ready — you&apos;ll pay when you pick up your order.
+                </p>
+              )}
+              {paymentMethod === "esewa" && (
+                <p className="text-sm text-stone-500 mt-2">
+                  You&apos;ll be redirected to eSewa to complete payment.
+                </p>
+              )}
+              {paymentMethod === "khalti" && (
+                <p className="text-sm text-stone-500 mt-2">
+                  You&apos;ll be redirected to Khalti to complete payment.
+                </p>
+              )}
+            </div>
 
             {/* Tip */}
             <div className="bg-white rounded-2xl border border-stone-200 p-6">
@@ -362,11 +441,21 @@ export default function CheckoutPage() {
                 disabled={loading}
                 className="w-full mt-5 bg-amber-700 hover:bg-amber-800 text-white rounded-full"
               >
-                {loading ? "Processing…" : `Pay ${formatPrice(total)}`}
+                {loading
+                  ? "Processing…"
+                  : paymentMethod === "cash"
+                  ? "Place Order"
+                  : `Pay ${formatPrice(total)}`}
               </Button>
 
               <p className="text-xs text-stone-400 text-center mt-3">
-                Secure payment via Stripe
+                {paymentMethod === "cash"
+                  ? "Pay with cash when you pick up your order"
+                  : paymentMethod === "esewa"
+                  ? "Secure payment via eSewa"
+                  : paymentMethod === "khalti"
+                  ? "Secure payment via Khalti"
+                  : "Secure payment via Stripe"}
               </p>
             </div>
           </div>

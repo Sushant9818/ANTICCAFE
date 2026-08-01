@@ -23,6 +23,7 @@ type Order = {
   orderType: string;
   status: string;
   paymentStatus: string;
+  paymentMethod: string | null;
   subtotal: string;
   tax: string;
   tip: string | null;
@@ -114,13 +115,20 @@ export function AdminOrdersBoard({ initialOrders }: Props) {
                   <p className="font-bold text-stone-900">#{order.orderNumber}</p>
                   <p className="text-sm text-stone-600">{order.customerName}</p>
                 </div>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
-                    ORDER_STATUS_COLORS[order.status] ?? "bg-stone-100 text-stone-700"
-                  }`}
-                >
-                  {order.status.replace(/_/g, " ")}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  {order.paymentMethod && order.paymentMethod !== "card" && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 capitalize">
+                      {order.paymentMethod}
+                    </span>
+                  )}
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
+                      ORDER_STATUS_COLORS[order.status] ?? "bg-stone-100 text-stone-700"
+                    }`}
+                  >
+                    {order.status.replace(/_/g, " ")}
+                  </span>
+                </div>
               </div>
 
               {/* Contact */}

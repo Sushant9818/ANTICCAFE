@@ -18,6 +18,7 @@ async function getOrders() {
       orderType: o.order_type,
       status: o.status,
       paymentStatus: o.payment_status,
+      paymentMethod: o.payment_method,
       subtotal: o.subtotal.toString(),
       tax: o.tax.toString(),
       tip: o.tip.toString(),

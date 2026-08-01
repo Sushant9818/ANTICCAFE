@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { notFound } from "next/navigation";
 import { CheckCircle, Clock, ChefHat, PackageCheck, Bike } from "lucide-react";
-import { ORDER_STATUS_COLORS } from "@/lib/constants";
+import { ORDER_STATUS_COLORS, CAFE_PHONE } from "@/lib/constants";
 import { formatPrice } from "@/lib/utils";
 import type { Metadata } from "next";
 
@@ -39,6 +39,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       orderType: orderRaw.order_type,
       status: orderRaw.status,
       paymentStatus: orderRaw.payment_status,
+      paymentMethod: orderRaw.payment_method,
       subtotal: orderRaw.subtotal.toString(),
       tax: orderRaw.tax.toString(),
       tip: orderRaw.tip.toString(),
@@ -100,6 +101,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           <p className="text-sm text-amber-700 font-medium mt-2">
             Estimated ready by{" "}
             {new Date(order.estimatedReadyAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          </p>
+        )}
+        {order.paymentMethod === "cash" && (
+          <p className="text-sm text-amber-700 font-medium mt-2">
+            Pay with cash when you pick up your order
           </p>
         )}
       </div>
@@ -189,8 +195,8 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
 
       <p className="text-center text-sm text-stone-400 mt-6">
         Questions? Call us at{" "}
-        <a href="tel:+15551234567" className="text-amber-700 hover:underline">
-          (555) 123-4567
+        <a href={`tel:${CAFE_PHONE.replace(/[^+\d]/g, "")}`} className="text-amber-700 hover:underline">
+          {CAFE_PHONE}
         </a>
       </p>
     </div>
