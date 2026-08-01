@@ -110,9 +110,6 @@ export function Footer() {
             <Link href="/about" className="text-sm text-amber-400 hover:text-amber-300 transition-colors">
               About
             </Link>
-            <Link href="/admin" className="text-sm text-stone-500 hover:text-stone-400 transition-colors">
-              Admin
-            </Link>
           </div>
         </div>
       </div>
