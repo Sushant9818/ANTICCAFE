@@ -7,13 +7,18 @@ function formatDiscount(type: string, value: string) {
 }
 
 export async function PromoBar() {
-  const promos = await db.promos.findMany({
-    where: {
-      is_active: true,
-      OR: [{ expires_at: null }, { expires_at: { gt: new Date() } }],
-    },
-    orderBy: { created_at: "desc" },
-  });
+  let promos;
+  try {
+    promos = await db.promos.findMany({
+      where: {
+        is_active: true,
+        OR: [{ expires_at: null }, { expires_at: { gt: new Date() } }],
+      },
+      orderBy: { created_at: "desc" },
+    });
+  } catch {
+    return null;
+  }
 
   const active = promos.filter(
     (p) => p.max_redemptions === null || p.times_redeemed < p.max_redemptions
