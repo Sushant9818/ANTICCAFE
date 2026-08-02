@@ -1,6 +1,8 @@
 import { db } from "@/db";
 import { AdminReservations } from "@/components/admin/reservations";
 
+export const dynamic = "force-dynamic";
+
 async function getReservations() {
   try {
     const reservationsRaw = await db.reservations.findMany({

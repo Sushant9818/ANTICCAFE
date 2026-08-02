@@ -1,6 +1,8 @@
 import { db } from "@/db";
 import { AdminPromoManager } from "@/components/admin/promo-manager";
 
+export const dynamic = "force-dynamic";
+
 async function getPromos() {
   try {
     const rows = await db.promos.findMany({ orderBy: { created_at: "desc" } });

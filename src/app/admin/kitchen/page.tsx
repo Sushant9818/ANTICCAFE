@@ -1,6 +1,8 @@
 import { KitchenBoard } from "@/components/admin/kitchen-board";
 import { getKitchenOrders } from "@/lib/kitchen-orders";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminKitchenPage() {
   const ordersList = await getKitchenOrders();
 

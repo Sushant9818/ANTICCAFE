@@ -2,6 +2,8 @@ import { db } from "@/db";
 import { ShoppingBag, CalendarDays, DollarSign, Package } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 async function getStats() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);

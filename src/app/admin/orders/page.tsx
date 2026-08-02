@@ -1,6 +1,8 @@
 import { db } from "@/db";
 import { AdminOrdersBoard } from "@/components/admin/orders-board";
 
+export const dynamic = "force-dynamic";
+
 async function getOrders() {
   try {
     const ordersRaw = await db.orders.findMany({

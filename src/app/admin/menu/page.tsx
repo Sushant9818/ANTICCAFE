@@ -1,6 +1,8 @@
 import { db } from "@/db";
 import { AdminMenuManager } from "@/components/admin/menu-manager";
 
+export const dynamic = "force-dynamic";
+
 async function getMenuData() {
   try {
     const [categoriesRaw, itemsWithCategory] = await Promise.all([
