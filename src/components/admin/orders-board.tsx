@@ -33,6 +33,8 @@ type Order = {
   deliveryAddress: string | null;
   deliveryCity: string | null;
   createdAt: Date | null;
+  refundRequested: boolean;
+  refundReason: string | null;
   items: OrderItem[];
 };
 
@@ -50,6 +52,7 @@ const STATUS_FLOW: Record<string, string> = {
 export function AdminOrdersBoard({ initialOrders }: Props) {
   const [orders, setOrders] = useState(initialOrders);
   const [filter, setFilter] = useState<string>("active");
+  const [decidingId, setDecidingId] = useState<string | null>(null);
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     try {
@@ -68,10 +71,37 @@ export function AdminOrdersBoard({ initialOrders }: Props) {
     }
   };
 
+  const decideRefund = async (orderId: string, approve: boolean) => {
+    setDecidingId(orderId);
+    try {
+      const res = await fetch(`/api/admin/refunds/${orderId}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ approve }),
+      });
+      if (!res.ok) throw new Error("Failed to update");
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId
+            ? { ...o, refundRequested: false, paymentStatus: approve ? "refunded" : o.paymentStatus }
+            : o
+        )
+      );
+      toast.success(approve ? "Refund approved" : "Refund denied");
+    } catch {
+      toast.error("Failed to process refund decision");
+    } finally {
+      setDecidingId(null);
+    }
+  };
+
+  const refundCount = orders.filter((o) => o.refundRequested).length;
+
   const filtered = orders.filter((o) => {
     if (filter === "active") return !["delivered", "cancelled"].includes(o.status);
     if (filter === "delivered") return o.status === "delivered";
     if (filter === "cancelled") return o.status === "cancelled";
+    if (filter === "refunds") return o.refundRequested;
     return true;
   });
 
@@ -82,6 +112,7 @@ export function AdminOrdersBoard({ initialOrders }: Props) {
         {[
           { key: "active", label: "Active" },
           { key: "delivered", label: "Delivered" },
+          { key: "refunds", label: `Refunds${refundCount > 0 ? ` (${refundCount})` : ""}` },
           { key: "all", label: "All Orders" },
         ].map(({ key, label }) => (
           <button
@@ -116,6 +147,11 @@ export function AdminOrdersBoard({ initialOrders }: Props) {
                   <p className="text-sm text-stone-300">{order.customerName}</p>
                 </div>
                 <div className="flex items-center gap-1.5">
+                  {order.refundRequested && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-900/40 text-amber-400">
+                      Refund requested
+                    </span>
+                  )}
                   {order.paymentMethod && order.paymentMethod !== "card" && (
                     <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-admin-cream text-admin-amber capitalize">
                       {order.paymentMethod}
@@ -190,6 +226,31 @@ export function AdminOrdersBoard({ initialOrders }: Props) {
                 <span>Total</span>
                 <span>{formatPrice(Number(order.total))}</span>
               </div>
+
+              {/* Refund request */}
+              {order.refundRequested && (
+                <div className="rounded-xl border border-amber-900/40 bg-amber-950/20 p-3 space-y-2">
+                  {order.refundReason && (
+                    <p className="text-xs text-amber-300/80 italic">"{order.refundReason}"</p>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => decideRefund(order.id, true)}
+                      disabled={decidingId === order.id}
+                      className="flex-1 py-1.5 rounded-lg bg-admin-amber text-white text-xs font-semibold hover:bg-admin-amber/90 disabled:opacity-50"
+                    >
+                      Approve Refund
+                    </button>
+                    <button
+                      onClick={() => decideRefund(order.id, false)}
+                      disabled={decidingId === order.id}
+                      className="flex-1 py-1.5 rounded-lg border border-stone-700 text-stone-300 text-xs font-medium hover:border-stone-600 disabled:opacity-50"
+                    >
+                      Deny
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Action */}
               {STATUS_FLOW[order.status] && (

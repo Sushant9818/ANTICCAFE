@@ -4,7 +4,6 @@ import { z } from "zod";
 
 const schema = z.object({
   status: z.enum(["pending", "confirmed", "preparing", "ready", "out_for_delivery", "delivered", "cancelled"]).optional(),
-  paymentStatus: z.enum(["pending", "paid", "refunded", "failed"]).optional(),
   estimatedMinutes: z.number().int().positive().max(240).optional(),
 });
 
@@ -17,7 +16,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       updated_at: new Date(),
     };
     if (data.status !== undefined) updateData.status = data.status;
-    if (data.paymentStatus !== undefined) updateData.payment_status = data.paymentStatus;
     if (data.estimatedMinutes !== undefined) {
       updateData.estimated_ready_at = new Date(Date.now() + data.estimatedMinutes * 60_000);
     }

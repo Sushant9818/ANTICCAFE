@@ -39,6 +39,8 @@ async function getOrders() {
       specialInstructions: o.special_instructions,
       accessToken: o.access_token,
       scheduledFor: o.scheduled_for,
+      refundRequested: o.refund_requested,
+      refundReason: o.refund_reason,
       createdAt: o.created_at,
       updatedAt: o.updated_at,
       items: o.items.map((i) => ({

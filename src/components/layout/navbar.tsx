@@ -14,7 +14,10 @@ export function Navbar() {
   const itemCount = useCart((s) => s.itemCount());
   const pathname = usePathname();
   const isAdmin =
-    pathname.startsWith("/admin") || pathname.startsWith("/waiter") || pathname.startsWith("/kitchen");
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/waiter") ||
+    pathname.startsWith("/kitchen") ||
+    pathname.startsWith("/cashier");
   const router = useRouter();
   const { signOut } = useClerk();
   const { isSignedIn, user } = useUser();
@@ -35,7 +38,7 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-stone-800 bg-stone-950">
+    <header className="print:hidden sticky top-0 z-50 w-full border-b border-stone-800 bg-stone-950">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center">
           <Image

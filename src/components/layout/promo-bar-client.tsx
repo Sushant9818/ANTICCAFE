@@ -15,7 +15,7 @@ export function PromoBarClient({ messages }: Props) {
   const duration = Math.max(8, totalLength * 0.2);
 
   return (
-    <div className="sticky top-16 z-40 bg-amber-700 text-white overflow-hidden h-9 flex items-center">
+    <div className="print:hidden sticky top-16 z-40 bg-amber-700 text-white overflow-hidden h-9 flex items-center">
       <div
         className="flex items-center whitespace-nowrap text-sm font-medium animate-marquee-rtl"
         style={{ animationDuration: `${duration}s` }}

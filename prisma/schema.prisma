@@ -93,9 +93,12 @@ model orders {
   access_token               String?
   scheduled_for              DateTime?
   estimated_ready_at         DateTime?
-  tab_id                     String?  @db.Uuid
-  created_at                 DateTime @default(now())
-  updated_at                 DateTime @default(now())
+  tab_id                     String?   @db.Uuid
+  refund_requested           Boolean   @default(false)
+  refund_requested_at        DateTime?
+  refund_reason              String?
+  created_at                 DateTime  @default(now())
+  updated_at                 DateTime  @default(now())
 
   customer customers?    @relation(fields: [customer_id], references: [id])
   items    order_items[]

@@ -1,21 +1,6 @@
 import { clerkClient, clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-// Table/tab operations are shared between admins and waiters.
-const isWaiterRoute = createRouteMatcher([
-  "/waiter(.*)",
-  "/admin/tables(.*)",
-  "/api/admin/tables(.*)",
-  "/api/admin/tabs(.*)",
-]);
-// Order status + menu availability are shared between admins and kitchen staff.
-const isKitchenRoute = createRouteMatcher([
-  "/kitchen(.*)",
-  "/api/admin/orders/(.*)",
-  "/api/admin/menu-availability(.*)",
-]);
-const isAdminOnlyRoute = createRouteMatcher(["/admin(.*)", "/api/admin(.*)"]);
-
 function parseEmailList(value: string | undefined) {
   return (value ?? "")
     .split(",")
@@ -23,11 +8,38 @@ function parseEmailList(value: string | undefined) {
     .filter(Boolean);
 }
 
+// Each group: routes shared between admins and that role. Checked in order —
+// the first matching group decides the required role(s) for the request.
+const roleGroups = [
+  {
+    envVar: "WAITER_ALLOWED_EMAILS",
+    matcher: createRouteMatcher([
+      "/waiter(.*)",
+      "/admin/tables(.*)",
+      "/api/admin/tables(.*)",
+      "/api/admin/tabs(.*)",
+    ]),
+  },
+  {
+    envVar: "KITCHEN_ALLOWED_EMAILS",
+    matcher: createRouteMatcher([
+      "/kitchen(.*)",
+      "/api/admin/orders/(.*)",
+      "/api/admin/menu-availability(.*)",
+    ]),
+  },
+  {
+    envVar: "CASHIER_ALLOWED_EMAILS",
+    matcher: createRouteMatcher(["/cashier(.*)", "/api/cashier(.*)"]),
+  },
+];
+
+const isAdminOnlyRoute = createRouteMatcher(["/admin(.*)", "/api/admin(.*)"]);
+
 export default clerkMiddleware(async (auth, req) => {
-  const forWaiter = isWaiterRoute(req);
-  const forKitchen = !forWaiter && isKitchenRoute(req);
-  const adminOnly = !forWaiter && !forKitchen && isAdminOnlyRoute(req);
-  if (!forWaiter && !forKitchen && !adminOnly) return;
+  const matchedGroup = roleGroups.find((g) => g.matcher(req));
+  const adminOnly = !matchedGroup && isAdminOnlyRoute(req);
+  if (!matchedGroup && !adminOnly) return;
 
   const isApi = req.nextUrl.pathname.startsWith("/api/");
   const { userId } = await auth();
@@ -40,23 +52,15 @@ export default clerkMiddleware(async (auth, req) => {
     return;
   }
 
-  const adminEmails = parseEmailList(process.env.ADMIN_ALLOWED_EMAILS);
-  const waiterEmails = parseEmailList(process.env.WAITER_ALLOWED_EMAILS);
-  const kitchenEmails = parseEmailList(process.env.KITCHEN_ALLOWED_EMAILS);
-
   const client = await clerkClient();
   const user = await client.users.getUser(userId);
   const email = user.primaryEmailAddress?.emailAddress.toLowerCase();
 
-  const isAdmin = !!email && adminEmails.includes(email);
-  const isWaiter = !!email && waiterEmails.includes(email);
-  const isKitchen = !!email && kitchenEmails.includes(email);
+  const isAdmin = !!email && parseEmailList(process.env.ADMIN_ALLOWED_EMAILS).includes(email);
+  const hasRole =
+    !!matchedGroup && !!email && parseEmailList(process.env[matchedGroup.envVar]).includes(email);
 
-  const allowed = forWaiter
-    ? isAdmin || isWaiter
-    : forKitchen
-      ? isAdmin || isKitchen
-      : isAdmin;
+  const allowed = matchedGroup ? isAdmin || hasRole : isAdmin;
 
   if (!allowed) {
     if (isApi) {
