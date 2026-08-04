@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 async function getMenuData() {
   try {
-    const [categoriesRaw, itemsRaw] = await Promise.all([
+    const [categoriesRaw, itemsRaw, ratingsRaw] = await Promise.all([
       db.menu_categories.findMany({
         where: { is_active: true },
         orderBy: { sort_order: "asc" },
@@ -19,7 +19,15 @@ async function getMenuData() {
         include: { category: true },
         orderBy: [{ category: { sort_order: "asc" } }, { sort_order: "asc" }],
       }),
+      db.reviews.groupBy({
+        by: ["menu_item_id"],
+        _avg: { rating: true },
+        _count: { rating: true },
+      }),
     ]);
+    const ratings = new Map(
+      ratingsRaw.map((r) => [r.menu_item_id, { avg: r._avg.rating ?? 0, count: r._count.rating }])
+    );
     const categories = categoriesRaw.map((c) => ({
       id: c.id,
       name: c.name,
@@ -46,6 +54,8 @@ async function getMenuData() {
       sortOrder: i.sort_order,
       createdAt: i.created_at,
       updatedAt: i.updated_at,
+      rating: ratings.get(i.id)?.avg ?? null,
+      reviewCount: ratings.get(i.id)?.count ?? 0,
       category: {
         id: i.category.id,
         name: i.category.name,

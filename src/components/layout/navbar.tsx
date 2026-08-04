@@ -3,10 +3,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
-import { ShoppingCart, Menu, X, LogOut } from "lucide-react";
+import { ShoppingCart, Menu, X, LogOut, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useCart } from "@/lib/cart-store";
-import { useClerk } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -16,12 +16,13 @@ export function Navbar() {
   const isAdmin = pathname.startsWith("/admin");
   const router = useRouter();
   const { signOut } = useClerk();
+  const { isSignedIn, user } = useUser();
 
   useEffect(() => { setMounted(true); }, []);
 
   async function handleLogout() {
     await signOut();
-    router.push("/login");
+    router.push(isAdmin ? "/login" : "/");
   }
 
   const links = [
@@ -70,6 +71,33 @@ export function Navbar() {
             </button>
           ) : (
             <>
+              {mounted && isSignedIn ? (
+                <div className="hidden md:flex items-center gap-2">
+                  <Link
+                    href="/account/orders"
+                    className="flex items-center gap-1.5 text-sm font-medium text-stone-300 hover:text-amber-400 transition-colors"
+                  >
+                    <User className="h-4 w-4" />
+                    {user?.firstName ?? "My Account"}
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="p-2 rounded-full hover:bg-stone-800 transition-colors"
+                    aria-label="Logout"
+                  >
+                    <LogOut className="h-4 w-4 text-stone-300" />
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="hidden md:inline-flex p-2 rounded-full hover:bg-stone-800 transition-colors"
+                  aria-label="Sign in"
+                >
+                  <User className="h-5 w-5 text-stone-300" />
+                </Link>
+              )}
+
               <Link
                 href="/cart"
                 className="relative p-2 rounded-full hover:bg-stone-800 transition-colors"
@@ -127,13 +155,44 @@ export function Navbar() {
               Logout
             </button>
           ) : (
-            <Link
-              href="/menu"
-              className="block w-full text-center px-4 py-2 rounded-full bg-amber-700 text-white text-sm font-medium"
-              onClick={() => setMobileOpen(false)}
-            >
-              Order Now
-            </Link>
+            <>
+              {mounted && isSignedIn ? (
+                <>
+                  <Link
+                    href="/account/orders"
+                    className="block text-sm font-medium text-stone-300 py-1"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {user?.firstName ?? "My Account"}
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setMobileOpen(false);
+                      handleLogout();
+                    }}
+                    className="flex w-full items-center justify-center gap-1.5 px-4 py-2 rounded-full border border-stone-700 text-stone-300 text-sm font-medium"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  className="block text-sm font-medium text-stone-300 py-1"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Sign In
+                </Link>
+              )}
+              <Link
+                href="/menu"
+                className="block w-full text-center px-4 py-2 rounded-full bg-amber-700 text-white text-sm font-medium"
+                onClick={() => setMobileOpen(false)}
+              >
+                Order Now
+              </Link>
+            </>
           )}
         </div>
       )}

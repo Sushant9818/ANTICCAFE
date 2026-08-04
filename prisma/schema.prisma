@@ -41,12 +41,14 @@ model menu_items {
   category menu_categories @relation(fields: [category_id], references: [id])
 
   order_items order_items[]
+  reviews     reviews[]
 
   @@index([category_id])
 }
 
 model customers {
   id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clerk_user_id   String?  @unique
   email           String?  @unique
   phone           String?
   name            String?
@@ -58,6 +60,7 @@ model customers {
 
   orders       orders[]
   reservations reservations[]
+  reviews      reviews[]
 }
 
 model orders {
@@ -90,13 +93,45 @@ model orders {
   access_token               String?
   scheduled_for              DateTime?
   estimated_ready_at         DateTime?
+  tab_id                     String?  @db.Uuid
   created_at                 DateTime @default(now())
   updated_at                 DateTime @default(now())
 
-  customer customers? @relation(fields: [customer_id], references: [id])
+  customer customers?    @relation(fields: [customer_id], references: [id])
   items    order_items[]
+  tab      dine_in_tabs? @relation(fields: [tab_id], references: [id])
+  reviews  reviews[]
 
   @@index([customer_id])
+  @@index([tab_id])
+}
+
+model tables {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  number     Int      @unique
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  tabs dine_in_tabs[]
+}
+
+model dine_in_tabs {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  table_id        String    @db.Uuid
+  status          String    @default("open")
+  payment_status  String    @default("pending")
+  payment_method  String?
+  server_name     String?
+  opened_at       DateTime  @default(now())
+  closed_at       DateTime?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @default(now())
+
+  table  tables   @relation(fields: [table_id], references: [id])
+  orders orders[]
+
+  @@index([table_id])
 }
 
 model order_items {
@@ -134,6 +169,23 @@ model reservations {
   customer customers? @relation(fields: [customer_id], references: [id])
 
   @@index([customer_id])
+}
+
+model reviews {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  menu_item_id  String   @db.Uuid
+  customer_id   String   @db.Uuid
+  order_id      String   @db.Uuid
+  rating        Int
+  comment       String?
+  created_at    DateTime @default(now())
+
+  menuItem menu_items @relation(fields: [menu_item_id], references: [id], onDelete: Cascade)
+  customer customers  @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  order    orders     @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@unique([customer_id, menu_item_id])
+  @@index([menu_item_id])
 }
 
 model staff {

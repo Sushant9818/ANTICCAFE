@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSignIn } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const { signIn, fetchStatus } = useSignIn();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const submitting = fetchStatus === "fetching";
 
   const [email, setEmail] = useState("");
@@ -41,7 +43,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/admin/kitchen");
+    router.push(searchParams.get("redirect_url") || "/account/orders");
   }
 
   return (
@@ -86,7 +88,7 @@ export default function LoginPage() {
             </h1>
             <div className="h-2 w-20 bg-amber-500 rounded-full mx-auto" />
             <p className="text-stone-400 text-xl leading-relaxed">
-              Sign in to manage orders, the kitchen board, and the menu.
+              Sign in to track your orders, manage reservations, and leave reviews.
             </p>
           </div>
         </div>
@@ -95,9 +97,9 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center px-6 py-16">
         <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-6">
           <div className="space-y-1">
-            <h2 className="text-2xl font-bold text-amber-400">Admin Login</h2>
+            <h2 className="text-2xl font-bold text-amber-400">Sign In</h2>
             <p className="text-sm text-stone-400">
-              Enter your credentials to access the admin dashboard.
+              Enter your email and password to continue.
             </p>
           </div>
 
@@ -146,6 +148,13 @@ export default function LoginPage() {
             {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
             Sign In
           </button>
+
+          <p className="text-center text-sm text-stone-400">
+            Don&apos;t have an account?{" "}
+            <Link href="/sign-up" className="text-amber-400 hover:text-amber-300 font-medium">
+              Sign up
+            </Link>
+          </p>
         </form>
       </div>
     </div>

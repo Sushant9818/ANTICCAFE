@@ -1,13 +1,13 @@
 "use client";
 
-import { Plus, Leaf } from "lucide-react";
+import { Plus, Leaf, Star } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/lib/cart-store";
 import { formatPrice } from "@/lib/utils";
 import type { MenuItem, MenuCategory } from "@/db/schema";
 
 type Props = {
-  item: MenuItem & { category: MenuCategory };
+  item: MenuItem & { category: MenuCategory; rating?: number | null; reviewCount?: number };
 };
 
 export function MenuItemCard({ item }: Props) {
@@ -45,7 +45,16 @@ export function MenuItemCard({ item }: Props) {
           </span>
         </div>
 
-        <p className="text-xs text-stone-500 mb-2">{item.category.name}</p>
+        <div className="flex items-center gap-2 mb-2">
+          <p className="text-xs text-stone-500">{item.category.name}</p>
+          {item.reviewCount ? (
+            <span className="flex items-center gap-0.5 text-xs text-amber-400">
+              <Star className="h-3 w-3 fill-amber-400" />
+              {item.rating?.toFixed(1)}
+              <span className="text-stone-500">({item.reviewCount})</span>
+            </span>
+          ) : null}
+        </div>
 
         {item.description && (
           <p className="text-sm text-stone-400 line-clamp-2 mb-3">{item.description}</p>

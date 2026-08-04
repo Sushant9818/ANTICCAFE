@@ -6,6 +6,7 @@ import { TAX_RATE, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD } from "@/lib/constants
 import { validatePromo } from "@/lib/promo";
 import { buildEsewaForm } from "@/lib/esewa";
 import { initiateKhaltiPayment } from "@/lib/khalti";
+import { getCurrentCustomer } from "@/lib/customer";
 import { randomBytes } from "crypto";
 
 const schema = z.object({
@@ -63,10 +64,12 @@ export async function POST(req: NextRequest) {
     const total = discountedSubtotal + tax + delivery + tip;
 
     const accessToken = randomBytes(20).toString("hex");
+    const customer = await getCurrentCustomer();
 
     // Create order in DB first
     const order = await db.orders.create({
       data: {
+        customer_id: customer?.id,
         customer_name: data.customerName,
         customer_email: data.customerEmail || null,
         customer_phone: data.customerPhone,
