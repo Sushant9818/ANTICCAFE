@@ -21,7 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     await db.orders.updateMany({
-      where: { tab_id: tabId },
+      where: { tab_id: tabId, status: { not: "cancelled" } },
       data: { payment_status: "paid", payment_method: data.paymentMethod },
     });
 

@@ -20,9 +20,11 @@ type Table = {
 
 type Props = {
   initialTables: Table[];
+  basePath?: string;
+  canManageTables?: boolean;
 };
 
-export function TablesGrid({ initialTables }: Props) {
+export function TablesGrid({ initialTables, basePath = "/admin/tables", canManageTables = true }: Props) {
   const router = useRouter();
   const [tables, setTables] = useState(initialTables);
   const [opening, setOpening] = useState<string | null>(null);
@@ -33,7 +35,7 @@ export function TablesGrid({ initialTables }: Props) {
 
   const openTable = (table: Table) => {
     if (table.openTab) {
-      router.push(`/admin/tables/${table.openTab.id}`);
+      router.push(`${basePath}/${table.openTab.id}`);
       return;
     }
     setPendingTable(table);
@@ -55,7 +57,7 @@ export function TablesGrid({ initialTables }: Props) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      router.push(`/admin/tables/${data.tab.id}`);
+      router.push(`${basePath}/${data.tab.id}`);
     } catch {
       toast.error("Failed to open table");
       setOpening(null);
@@ -103,6 +105,7 @@ export function TablesGrid({ initialTables }: Props) {
 
   return (
     <div>
+      {canManageTables && (
       <div className="flex justify-end mb-6">
         {addingTable ? (
           <div className="flex items-center gap-2">
@@ -137,6 +140,7 @@ export function TablesGrid({ initialTables }: Props) {
           </button>
         )}
       </div>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {tables.map((table) => (
@@ -169,7 +173,7 @@ export function TablesGrid({ initialTables }: Props) {
                 <span className="text-xs text-admin-taupe">Empty</span>
               )}
             </button>
-            {!table.openTab && (
+            {!table.openTab && canManageTables && (
               <button
                 onClick={() => removeTable(table)}
                 className="absolute -top-2 -right-2 p-1 rounded-full bg-stone-900 border border-stone-700 text-admin-taupe opacity-0 group-hover:opacity-100 hover:text-red-600 transition-opacity"

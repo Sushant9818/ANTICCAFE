@@ -45,24 +45,48 @@ type Props = {
   tab: Tab;
   menuItems: MenuItem[];
   categories: Category[];
+  basePath?: string;
+  billLabel?: string;
 };
 
 type CartLine = { id: string; name: string; price: number; quantity: number };
 
-function RoundCard({ round, index }: { round: Round; index: number }) {
+function RoundCard({
+  round,
+  index,
+  onCancel,
+  cancelling,
+}: {
+  round: Round;
+  index: number;
+  onCancel?: (round: Round) => void;
+  cancelling?: boolean;
+}) {
+  const editable = onCancel && ["pending", "confirmed"].includes(round.status);
   return (
     <div className="bg-stone-900 rounded-xl border border-stone-800 p-5">
       <div className="flex items-center justify-between mb-3">
         <p className="font-medium text-white font-[family-name:var(--font-fraunces)]">
           Round {index + 1}
         </p>
-        <span
-          className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
-            ORDER_STATUS_COLORS[round.status] ?? "bg-admin-cream text-admin-taupe"
-          }`}
-        >
-          {round.status.replace(/_/g, " ")}
-        </span>
+        <div className="flex items-center gap-2">
+          <span
+            className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
+              ORDER_STATUS_COLORS[round.status] ?? "bg-admin-cream text-admin-taupe"
+            }`}
+          >
+            {round.status.replace(/_/g, " ")}
+          </span>
+          {editable && (
+            <button
+              onClick={() => onCancel!(round)}
+              disabled={cancelling}
+              className="text-xs text-red-400 hover:text-red-300 font-medium disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </div>
       <div className="space-y-1">
         {round.items.map((item) => (
@@ -84,7 +108,13 @@ function RoundCard({ round, index }: { round: Round; index: number }) {
   );
 }
 
-export function TabDetail({ tab, menuItems, categories }: Props) {
+export function TabDetail({
+  tab,
+  menuItems,
+  categories,
+  basePath = "/admin/tables",
+  billLabel = "Close & Pay",
+}: Props) {
   const router = useRouter();
   const [rounds, setRounds] = useState(tab.rounds);
   const [status, setStatus] = useState(tab.status);
@@ -92,9 +122,11 @@ export function TabDetail({ tab, menuItems, categories }: Props) {
   const [cart, setCart] = useState<CartLine[]>([]);
   const [sending, setSending] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [cancellingRoundId, setCancellingRoundId] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card" | "esewa" | "khalti">("cash");
 
-  const tabTotal = rounds.reduce((sum, r) => sum + Number(r.total), 0);
+  const activeRounds = rounds.filter((r) => r.status !== "cancelled");
+  const tabTotal = activeRounds.reduce((sum, r) => sum + Number(r.total), 0);
   const cartTotal = cart.reduce((sum, l) => sum + l.price * l.quantity, 0);
 
   const filteredItems =
@@ -172,7 +204,7 @@ export function TabDetail({ tab, menuItems, categories }: Props) {
       if (!res.ok) throw new Error(data.error);
       setStatus("closed");
       toast.success("Tab closed");
-      router.push("/admin/tables");
+      router.push(basePath);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to close tab");
     } finally {
@@ -180,10 +212,28 @@ export function TabDetail({ tab, menuItems, categories }: Props) {
     }
   };
 
+  const cancelRound = async (round: Round) => {
+    if (!confirm(`Cancel Round ${rounds.indexOf(round) + 1}? This can't be undone.`)) return;
+    setCancellingRoundId(round.id);
+    try {
+      const res = await fetch(`/api/admin/tabs/${tab.id}/orders/${round.id}/cancel`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setRounds((prev) => prev.map((r) => (r.id === round.id ? { ...r, status: "cancelled" } : r)));
+      toast.success("Round cancelled");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to cancel round");
+    } finally {
+      setCancellingRoundId(null);
+    }
+  };
+
   return (
     <div>
       <button
-        onClick={() => router.push("/admin/tables")}
+        onClick={() => router.push(basePath)}
         className="flex items-center gap-1.5 text-sm text-admin-taupe hover:text-white mb-4"
       >
         <ArrowLeft className="h-4 w-4" /> Back to Tables
@@ -363,7 +413,7 @@ export function TabDetail({ tab, menuItems, categories }: Props) {
 
             <div className="bg-stone-900 rounded-xl border border-stone-800 p-6">
               <h2 className="font-[family-name:var(--font-fraunces)] font-semibold text-white mb-4">
-                Close Tab
+                {billLabel}
               </h2>
               <div className="flex gap-2 flex-wrap mb-4">
                 {(["cash", "card", "esewa", "khalti"] as const).map((method) => (
@@ -382,10 +432,10 @@ export function TabDetail({ tab, menuItems, categories }: Props) {
               </div>
               <button
                 onClick={closeTab}
-                disabled={closing || rounds.length === 0}
+                disabled={closing || activeRounds.length === 0}
                 className="w-full py-3 rounded-full bg-admin-amber text-white text-sm font-semibold hover:bg-admin-amber/90 disabled:opacity-50"
               >
-                {closing ? "Closing…" : `Close & Pay ${formatPrice(tabTotal)}`}
+                {closing ? "Closing…" : `${billLabel} ${formatPrice(tabTotal)}`}
               </button>
             </div>
 
@@ -395,7 +445,13 @@ export function TabDetail({ tab, menuItems, categories }: Props) {
                   Rounds Sent
                 </h2>
                 {rounds.map((round, idx) => (
-                  <RoundCard key={round.id} round={round} index={idx} />
+                  <RoundCard
+                    key={round.id}
+                    round={round}
+                    index={idx}
+                    onCancel={cancelRound}
+                    cancelling={cancellingRoundId === round.id}
+                  />
                 ))}
               </div>
             )}
