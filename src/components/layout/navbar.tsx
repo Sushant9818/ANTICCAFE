@@ -13,7 +13,8 @@ export function Navbar() {
   const [mounted, setMounted] = useState(false);
   const itemCount = useCart((s) => s.itemCount());
   const pathname = usePathname();
-  const isAdmin = pathname.startsWith("/admin") || pathname.startsWith("/waiter");
+  const isAdmin =
+    pathname.startsWith("/admin") || pathname.startsWith("/waiter") || pathname.startsWith("/kitchen");
   const router = useRouter();
   const { signOut } = useClerk();
   const { isSignedIn, user } = useUser();
