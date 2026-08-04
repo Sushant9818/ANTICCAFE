@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import { db } from "@/db";
 import { AdminOrdersBoard } from "@/components/admin/orders-board";
 
@@ -60,7 +62,17 @@ export default async function AdminOrdersPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold text-stone-900 mb-6">Orders</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-semibold text-white font-[family-name:var(--font-fraunces)]">
+          Orders
+        </h1>
+        <Link
+          href="/admin/orders/new"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-admin-amber text-white text-sm font-medium hover:bg-admin-amber/90"
+        >
+          <Plus className="h-4 w-4" /> New Order
+        </Link>
+      </div>
       <AdminOrdersBoard initialOrders={ordersList} />
     </div>
   );

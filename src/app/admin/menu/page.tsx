@@ -55,7 +55,9 @@ export default async function AdminMenuPage() {
   const { categories, items } = await getMenuData();
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold text-stone-900 mb-6">Menu Management</h1>
+      <h1 className="text-3xl font-semibold text-white font-[family-name:var(--font-fraunces)] mb-6">
+        Menu Management
+      </h1>
       <AdminMenuManager initialCategories={categories} initialItems={items} />
     </div>
   );

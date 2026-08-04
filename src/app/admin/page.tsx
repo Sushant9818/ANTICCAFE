@@ -65,60 +65,56 @@ export default async function AdminDashboard() {
   const [stats, recentOrders] = await Promise.all([getStats(), getRecentOrders()]);
 
   const statCards = [
-    {
-      label: "Today's Orders",
-      value: stats.todayOrders,
-      icon: ShoppingBag,
-      color: "text-amber-700",
-      bg: "bg-amber-50",
-    },
-    {
-      label: "Today's Revenue",
-      value: formatPrice(stats.todayRevenue),
-      icon: DollarSign,
-      color: "text-green-700",
-      bg: "bg-green-50",
-    },
-    {
-      label: "Pending Orders",
-      value: stats.pendingOrders,
-      icon: Package,
-      color: "text-blue-700",
-      bg: "bg-blue-50",
-    },
-    {
-      label: "Pending Reservations",
-      value: stats.pendingReservations,
-      icon: CalendarDays,
-      color: "text-purple-700",
-      bg: "bg-purple-50",
-    },
+    { label: "Today's Orders", value: stats.todayOrders, icon: ShoppingBag },
+    { label: "Today's Revenue", value: formatPrice(stats.todayRevenue), icon: DollarSign },
+    { label: "Pending Orders", value: stats.pendingOrders, icon: Package },
+    { label: "Pending Reservations", value: stats.pendingReservations, icon: CalendarDays },
   ];
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold text-stone-900 mb-6">Dashboard</h1>
+      <p className="text-xs uppercase tracking-widest text-admin-taupe font-[family-name:var(--font-plex-mono)] mb-1">
+        Today · {new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
+      </p>
+      <h1 className="text-3xl font-semibold text-white font-[family-name:var(--font-fraunces)] mb-6">
+        Dashboard
+      </h1>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-        {statCards.map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white rounded-2xl border border-stone-200 p-5">
-            <div className={`inline-flex p-2 rounded-lg ${bg} mb-3`}>
-              <Icon className={`h-5 w-5 ${color}`} />
+        {statCards.map(({ label, value, icon: Icon }) => (
+          <div
+            key={label}
+            className="relative bg-stone-900 rounded-xl border border-stone-800 p-5 overflow-hidden"
+          >
+            <div className="absolute top-0 left-0 right-0 h-[3px] bg-admin-amber" />
+            <div className="flex items-center justify-between mb-3">
+              <span className="inline-flex p-2 rounded-lg bg-admin-cream">
+                <Icon className="h-4 w-4 text-admin-amber" />
+              </span>
             </div>
-            <p className="text-2xl font-bold text-stone-900">{value}</p>
-            <p className="text-sm text-stone-500 mt-0.5">{label}</p>
+            <p className="text-2xl font-semibold text-white font-[family-name:var(--font-plex-mono)]">
+              {value}
+            </p>
+            <p className="text-xs uppercase tracking-wide text-admin-taupe mt-1">{label}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl border border-stone-200 p-6">
-        <h2 className="font-semibold text-stone-900 mb-4">Recent Orders</h2>
+      <div className="bg-stone-900 rounded-xl border border-stone-800 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-[family-name:var(--font-fraunces)] font-semibold text-lg text-white">
+            Recent Orders
+          </h2>
+          <span className="text-xs text-admin-taupe uppercase tracking-wide font-[family-name:var(--font-plex-mono)]">
+            Last {recentOrders.length}
+          </span>
+        </div>
         {recentOrders.length === 0 ? (
-          <p className="text-stone-400 text-sm">No orders yet.</p>
+          <p className="text-admin-taupe text-sm">No orders yet.</p>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-stone-500 border-b border-stone-100">
+              <tr className="text-left text-admin-taupe border-b border-dashed border-stone-700">
                 <th className="pb-2 font-medium">#</th>
                 <th className="pb-2 font-medium">Customer</th>
                 <th className="pb-2 font-medium">Type</th>
@@ -128,16 +124,25 @@ export default async function AdminDashboard() {
             </thead>
             <tbody>
               {recentOrders.map((order) => (
-                <tr key={order.id} className="border-b border-stone-50 last:border-0">
-                  <td className="py-2.5 text-stone-500">#{order.order_number}</td>
-                  <td className="py-2.5 font-medium text-stone-800">{order.customer_name}</td>
-                  <td className="py-2.5 capitalize text-stone-600">{order.order_type}</td>
+                <tr
+                  key={order.id}
+                  className="border-b border-dashed border-stone-800 last:border-0"
+                >
+                  <td className="py-2.5 text-admin-taupe font-[family-name:var(--font-plex-mono)]">
+                    #{order.order_number}
+                  </td>
+                  <td className="py-2.5 font-medium text-white">{order.customer_name}</td>
+                  <td className="py-2.5 capitalize text-stone-300">
+                    {order.order_type.replace(/_/g, " ")}
+                  </td>
                   <td className="py-2.5">
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 capitalize">
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-admin-cream text-admin-amber capitalize">
                       {order.status.replace(/_/g, " ")}
                     </span>
                   </td>
-                  <td className="py-2.5 text-right font-medium">{formatPrice(Number(order.total))}</td>
+                  <td className="py-2.5 text-right font-medium font-[family-name:var(--font-plex-mono)] text-white">
+                    {formatPrice(Number(order.total))}
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -27,7 +27,7 @@ export default async function AdminPromosPage() {
   const promos = await getPromos();
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold text-stone-900 mb-6">Promo Codes</h1>
+      <h1 className="text-2xl font-bold text-white mb-6">Promo Codes</h1>
       <AdminPromoManager initialPromos={promos} />
     </div>
   );

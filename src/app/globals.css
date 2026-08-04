@@ -59,6 +59,13 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  --color-admin-ink: #1c1512;
+  --color-admin-paper: #fbf7f0;
+  --color-admin-amber: #b45309;
+  --color-admin-cream: #fde9d0;
+  --color-admin-taupe: #7c5c4a;
+  --color-admin-sage: #5c7a5c;
 }
 
 :root {

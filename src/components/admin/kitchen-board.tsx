@@ -176,7 +176,9 @@ export function KitchenBoard({ initialOrders }: Props) {
                   )}
 
                   <div className="flex items-center gap-3 text-xs text-stone-500">
-                    <span className="capitalize font-medium text-stone-300">{order.orderType}</span>
+                    <span className="capitalize font-medium text-stone-300">
+                      {order.orderType.replace(/_/g, " ")}
+                    </span>
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       {order.createdAt ? formatTime(order.createdAt) : "—"}

@@ -11,11 +11,13 @@ import {
   CalendarDays,
   Settings,
   Tag,
+  LayoutGrid,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/admin/tables", label: "Tables", icon: LayoutGrid },
   { href: "/admin/kitchen", label: "Kitchen", icon: ChefHat },
   { href: "/admin/orders", label: "Orders", icon: ClipboardList },
   { href: "/admin/menu", label: "Menu", icon: UtensilsCrossed },
@@ -28,8 +30,8 @@ export function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-56 bg-stone-900 text-stone-300 flex flex-col shrink-0 min-h-screen">
-      <div className="flex items-center p-5 border-b border-stone-800">
+    <aside className="w-56 bg-admin-ink text-stone-400 flex flex-col shrink-0 min-h-screen">
+      <div className="flex items-center p-5 border-b border-white/10">
         <Image
           src="/logo.svg"
           alt="AnticCafe"
@@ -38,7 +40,7 @@ export function AdminNav() {
           className="h-8 w-auto brightness-0 invert"
         />
       </div>
-      <p className="text-[10px] text-stone-500 px-5 pt-4 pb-1 uppercase tracking-widest">
+      <p className="text-[10px] text-admin-taupe px-5 pt-4 pb-1 uppercase tracking-widest font-[family-name:var(--font-plex-mono)]">
         Admin
       </p>
       <nav className="flex-1 px-2 pb-4">
@@ -51,8 +53,8 @@ export function AdminNav() {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors my-0.5",
                 active
-                  ? "bg-amber-700 text-white"
-                  : "hover:bg-stone-800 text-stone-400 hover:text-stone-200"
+                  ? "bg-admin-amber text-white"
+                  : "hover:bg-white/5 text-stone-400 hover:text-stone-200"
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
@@ -61,10 +63,10 @@ export function AdminNav() {
           );
         })}
       </nav>
-      <div className="p-4 border-t border-stone-800">
+      <div className="p-4 border-t border-white/10">
         <Link
           href="/"
-          className="text-xs text-stone-500 hover:text-stone-300 transition-colors"
+          className="text-xs text-admin-taupe hover:text-stone-300 transition-colors"
         >
           ← Back to site
         </Link>

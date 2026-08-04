@@ -175,8 +175,8 @@ export function AdminMenuManager({ initialCategories, initialItems }: Props) {
             onClick={() => setActiveCategory("all")}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               activeCategory === "all"
-                ? "bg-stone-900 text-white"
-                : "bg-white border border-stone-200 text-stone-600"
+                ? "bg-admin-amber text-white"
+                : "bg-stone-900 border border-stone-800 text-stone-300"
             }`}
           >
             All
@@ -187,23 +187,23 @@ export function AdminMenuManager({ initialCategories, initialItems }: Props) {
               onClick={() => setActiveCategory(cat.id)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 activeCategory === cat.id
-                  ? "bg-stone-900 text-white"
-                  : "bg-white border border-stone-200 text-stone-600"
+                  ? "bg-admin-amber text-white"
+                  : "bg-stone-900 border border-stone-800 text-stone-300"
               }`}
             >
               {cat.name}
             </button>
           ))}
         </div>
-        <Button onClick={openNew} className="bg-amber-700 hover:bg-amber-800 text-white rounded-full flex items-center gap-2">
+        <Button onClick={openNew} className="bg-admin-amber hover:bg-admin-amber/90 text-white rounded-full flex items-center gap-2">
           <Plus className="h-4 w-4" /> Add Item
         </Button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+      <div className="bg-stone-900 rounded-2xl border border-stone-800 overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-stone-100 text-stone-500">
+            <tr className="border-b border-stone-800 text-stone-400">
               <th className="text-left px-5 py-3 font-medium">Item</th>
               <th className="text-left px-5 py-3 font-medium">Category</th>
               <th className="text-left px-5 py-3 font-medium">Price</th>
@@ -213,26 +213,26 @@ export function AdminMenuManager({ initialCategories, initialItems }: Props) {
           </thead>
           <tbody>
             {filtered.map((item) => (
-              <tr key={item.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50">
+              <tr key={item.id} className="border-b border-dashed border-stone-800 last:border-0 hover:bg-stone-800/50">
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-stone-900">{item.name}</span>
+                    <span className="font-medium text-white">{item.name}</span>
                     {item.isFeatured && (
                       <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
                     )}
                   </div>
                   {item.description && (
-                    <p className="text-xs text-stone-400 mt-0.5 line-clamp-1">{item.description}</p>
+                    <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">{item.description}</p>
                   )}
                 </td>
-                <td className="px-5 py-3 text-stone-600">{item.categoryName}</td>
-                <td className="px-5 py-3 font-medium">{formatPrice(Number(item.price))}</td>
+                <td className="px-5 py-3 text-stone-300">{item.categoryName}</td>
+                <td className="px-5 py-3 font-medium text-white">{formatPrice(Number(item.price))}</td>
                 <td className="px-5 py-3">
                   <span
                     className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                       item.isAvailable
-                        ? "bg-green-100 text-green-700"
-                        : "bg-stone-100 text-stone-500"
+                        ? "bg-green-900/40 text-green-400"
+                        : "bg-stone-800 text-stone-400"
                     }`}
                   >
                     {item.isAvailable ? "Available" : "Hidden"}
@@ -242,20 +242,20 @@ export function AdminMenuManager({ initialCategories, initialItems }: Props) {
                   <div className="flex items-center justify-end gap-2">
                     <button
                       onClick={() => toggleAvailable(item)}
-                      className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-stone-800 text-stone-500 hover:text-stone-200 transition-colors"
                       title={item.isAvailable ? "Hide" : "Show"}
                     >
                       {item.isAvailable ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                     <button
                       onClick={() => openEdit(item)}
-                      className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-stone-800 text-stone-500 hover:text-stone-200 transition-colors"
                     >
                       <Pencil className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => deleteItem(item)}
-                      className="p-1.5 rounded-lg hover:bg-red-50 text-stone-400 hover:text-red-600 transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-red-950/50 text-stone-500 hover:text-red-400 transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -265,7 +265,7 @@ export function AdminMenuManager({ initialCategories, initialItems }: Props) {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="text-center py-10 text-stone-400">
+                <td colSpan={5} className="text-center py-10 text-stone-500">
                   No items in this category.
                 </td>
               </tr>
