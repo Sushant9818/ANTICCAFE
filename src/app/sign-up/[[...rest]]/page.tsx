@@ -15,6 +15,7 @@ export default function SignUpPage() {
   const [step, setStep] = useState<"details" | "code">("details");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +70,22 @@ export default function SignUpPage() {
       return;
     }
 
-    router.push(searchParams.get("redirect_url") || "/account/orders");
+    if (phone.trim()) {
+      await fetch("/api/account/phone", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phone.trim() }),
+      });
+    }
+
+    const redirectUrl = searchParams.get("redirect_url");
+    if (redirectUrl) {
+      router.push(redirectUrl);
+      return;
+    }
+    const homeRes = await fetch("/api/auth/home");
+    const { path } = await homeRes.json();
+    router.push(path);
   }
 
   return (
@@ -148,6 +164,14 @@ export default function SignUpPage() {
                 className="w-full rounded-lg border-l-4 border-l-amber-600 border border-stone-800 bg-stone-900 px-4 py-3 text-white placeholder:text-stone-500 outline-none focus:border-l-amber-500 focus:ring-1 focus:ring-amber-500/40 transition-colors"
               />
               <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Phone number (optional)"
+                autoComplete="tel"
+                className="w-full rounded-lg border-l-4 border-l-amber-600 border border-stone-800 bg-stone-900 px-4 py-3 text-white placeholder:text-stone-500 outline-none focus:border-l-amber-500 focus:ring-1 focus:ring-amber-500/40 transition-colors"
+              />
+              <input
                 type="password"
                 required
                 minLength={8}
@@ -158,6 +182,8 @@ export default function SignUpPage() {
                 className="w-full rounded-lg border-l-4 border-l-amber-600 border border-stone-800 bg-stone-900 px-4 py-3 text-white placeholder:text-stone-500 outline-none focus:border-l-amber-500 focus:ring-1 focus:ring-amber-500/40 transition-colors"
               />
             </div>
+
+            <div id="clerk-captcha" />
 
             <button
               type="submit"

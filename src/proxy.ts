@@ -1,18 +1,12 @@
 import { clerkClient, clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-
-function parseEmailList(value: string | undefined) {
-  return (value ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-}
+import { getUserRoles, type UserRoles } from "@/lib/roles";
 
 // Each group: routes shared between admins and that role. Checked in order —
-// the first matching group decides the required role(s) for the request.
-const roleGroups = [
+// the first matching group decides the required role for the request.
+const roleGroups: { check: (r: UserRoles) => boolean; matcher: ReturnType<typeof createRouteMatcher> }[] = [
   {
-    envVar: "WAITER_ALLOWED_EMAILS",
+    check: (r) => r.isWaiter,
     matcher: createRouteMatcher([
       "/waiter(.*)",
       "/admin/tables(.*)",
@@ -21,7 +15,7 @@ const roleGroups = [
     ]),
   },
   {
-    envVar: "KITCHEN_ALLOWED_EMAILS",
+    check: (r) => r.isKitchen,
     matcher: createRouteMatcher([
       "/kitchen(.*)",
       "/api/admin/orders/(.*)",
@@ -29,7 +23,7 @@ const roleGroups = [
     ]),
   },
   {
-    envVar: "CASHIER_ALLOWED_EMAILS",
+    check: (r) => r.isCashier,
     matcher: createRouteMatcher(["/cashier(.*)", "/api/cashier(.*)"]),
   },
 ];
@@ -56,11 +50,11 @@ export default clerkMiddleware(async (auth, req) => {
   const user = await client.users.getUser(userId);
   const email = user.primaryEmailAddress?.emailAddress.toLowerCase();
 
-  const isAdmin = !!email && parseEmailList(process.env.ADMIN_ALLOWED_EMAILS).includes(email);
-  const hasRole =
-    !!matchedGroup && !!email && parseEmailList(process.env[matchedGroup.envVar]).includes(email);
+  const roles = email
+    ? await getUserRoles(email)
+    : { isAdmin: false, isWaiter: false, isKitchen: false, isCashier: false };
 
-  const allowed = matchedGroup ? isAdmin || hasRole : isAdmin;
+  const allowed = matchedGroup ? roles.isAdmin || matchedGroup.check(roles) : roles.isAdmin;
 
   if (!allowed) {
     if (isApi) {

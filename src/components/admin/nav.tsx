@@ -12,6 +12,9 @@ import {
   Settings,
   Tag,
   LayoutGrid,
+  Users,
+  BarChart3,
+  ScrollText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +26,9 @@ const navItems = [
   { href: "/admin/menu", label: "Menu", icon: UtensilsCrossed },
   { href: "/admin/reservations", label: "Reservations", icon: CalendarDays },
   { href: "/admin/promos", label: "Promos", icon: Tag },
+  { href: "/admin/staff", label: "Staff", icon: Users },
+  { href: "/admin/reports", label: "Reports", icon: BarChart3 },
+  { href: "/admin/audit-log", label: "Audit Log", icon: ScrollText },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

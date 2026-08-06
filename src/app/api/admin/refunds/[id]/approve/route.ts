@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { z } from "zod";
+import { logAction } from "@/lib/audit";
 
 const schema = z.object({
   approve: z.boolean(),
@@ -25,6 +26,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         updated_at: new Date(),
       },
     });
+
+    await logAction({
+      action: data.approve ? "refund.approved" : "refund.denied",
+      targetType: "order",
+      targetId: id,
+      metadata: { orderNumber: order.order_number, reason: order.refund_reason },
+    });
+
     return NextResponse.json(updated);
   } catch (err) {
     if (err instanceof z.ZodError) {

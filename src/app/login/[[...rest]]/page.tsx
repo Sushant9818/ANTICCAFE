@@ -12,12 +12,31 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const submitting = fetchStatus === "fetching";
 
+  const [step, setStep] = useState<"credentials" | "trust-code">("credentials");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
   const [keepSignedIn, setKeepSignedIn] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function completeSignIn() {
+    const { error: finalizeError } = await signIn.finalize();
+    if (finalizeError) {
+      setError(finalizeError.longMessage ?? "Could not complete sign-in.");
+      return;
+    }
+
+    const redirectUrl = searchParams.get("redirect_url");
+    if (redirectUrl) {
+      router.push(redirectUrl);
+      return;
+    }
+    const homeRes = await fetch("/api/auth/home");
+    const { path } = await homeRes.json();
+    router.push(path);
+  }
+
+  async function handleCredentialsSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (submitting) return;
     setError(null);
@@ -32,18 +51,41 @@ export default function LoginPage() {
       return;
     }
 
+    if (signIn.status === "needs_client_trust") {
+      const { error: sendError } = await signIn.mfa.sendEmailCode();
+      if (sendError) {
+        setError(sendError.longMessage ?? "Could not send verification code.");
+        return;
+      }
+      setStep("trust-code");
+      return;
+    }
+
     if (signIn.status !== "complete") {
       setError("Additional verification required.");
       return;
     }
 
-    const { error: finalizeError } = await signIn.finalize();
-    if (finalizeError) {
-      setError(finalizeError.longMessage ?? "Could not complete sign-in.");
+    await completeSignIn();
+  }
+
+  async function handleCodeSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (submitting) return;
+    setError(null);
+
+    const { error: verifyError } = await signIn.mfa.verifyEmailCode({ code });
+    if (verifyError) {
+      setError(verifyError.longMessage ?? "Invalid code.");
       return;
     }
 
-    router.push(searchParams.get("redirect_url") || "/account/orders");
+    if (signIn.status !== "complete") {
+      setError("Additional verification required.");
+      return;
+    }
+
+    await completeSignIn();
   }
 
   return (
@@ -95,67 +137,116 @@ export default function LoginPage() {
       </div>
 
       <div className="flex-1 flex items-center justify-center px-6 py-16">
-        <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-bold text-amber-400">Sign In</h2>
-            <p className="text-sm text-stone-400">
-              Enter your email and password to continue.
-            </p>
-          </div>
+        {step === "credentials" ? (
+          <form onSubmit={handleCredentialsSubmit} className="w-full max-w-sm space-y-6">
+            <div className="space-y-1">
+              <h2 className="text-2xl font-bold text-amber-400">Sign In</h2>
+              <p className="text-sm text-stone-400">
+                Enter your email and password to continue.
+              </p>
+            </div>
 
-          {error && (
-            <p className="text-sm text-red-400 bg-red-950/40 border border-red-900 rounded-lg px-3 py-2">
-              {error}
-            </p>
-          )}
+            {error && (
+              <p className="text-sm text-red-400 bg-red-950/40 border border-red-900 rounded-lg px-3 py-2">
+                {error}
+              </p>
+            )}
 
-          <div className="space-y-3">
+            <div className="space-y-3">
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email ID"
+                autoComplete="username"
+                className="w-full rounded-lg border-l-4 border-l-amber-600 border border-stone-800 bg-stone-900 px-4 py-3 text-white placeholder:text-stone-500 outline-none focus:border-l-amber-500 focus:ring-1 focus:ring-amber-500/40 transition-colors"
+              />
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                autoComplete="current-password"
+                className="w-full rounded-lg border-l-4 border-l-amber-600 border border-stone-800 bg-stone-900 px-4 py-3 text-white placeholder:text-stone-500 outline-none focus:border-l-amber-500 focus:ring-1 focus:ring-amber-500/40 transition-colors"
+              />
+            </div>
+
+            <label className="flex items-center gap-2 text-sm text-stone-400 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={keepSignedIn}
+                onChange={(e) => setKeepSignedIn(e.target.checked)}
+                className="h-4 w-4 rounded border-stone-700 bg-stone-900 accent-amber-600"
+              />
+              Keep me signed in
+            </label>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-amber-700 text-white text-sm font-semibold py-3 hover:bg-amber-800 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+            >
+              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              Sign In
+            </button>
+
+            <p className="text-center text-sm text-stone-400">
+              Don&apos;t have an account?{" "}
+              <Link href="/sign-up" className="text-amber-400 hover:text-amber-300 font-medium">
+                Sign up
+              </Link>
+            </p>
+          </form>
+        ) : (
+          <form onSubmit={handleCodeSubmit} className="w-full max-w-sm space-y-6">
+            <div className="space-y-1">
+              <h2 className="text-2xl font-bold text-amber-400">Verify it&apos;s you</h2>
+              <p className="text-sm text-stone-400">
+                New device detected — we sent a verification code to {email}.
+              </p>
+            </div>
+
+            {error && (
+              <p className="text-sm text-red-400 bg-red-950/40 border border-red-900 rounded-lg px-3 py-2">
+                {error}
+              </p>
+            )}
+
             <input
-              type="email"
+              type="text"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email ID"
-              autoComplete="username"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="Verification code"
+              autoComplete="one-time-code"
+              autoFocus
               className="w-full rounded-lg border-l-4 border-l-amber-600 border border-stone-800 bg-stone-900 px-4 py-3 text-white placeholder:text-stone-500 outline-none focus:border-l-amber-500 focus:ring-1 focus:ring-amber-500/40 transition-colors"
             />
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              autoComplete="current-password"
-              className="w-full rounded-lg border-l-4 border-l-amber-600 border border-stone-800 bg-stone-900 px-4 py-3 text-white placeholder:text-stone-500 outline-none focus:border-l-amber-500 focus:ring-1 focus:ring-amber-500/40 transition-colors"
-            />
-          </div>
 
-          <label className="flex items-center gap-2 text-sm text-stone-400 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={keepSignedIn}
-              onChange={(e) => setKeepSignedIn(e.target.checked)}
-              className="h-4 w-4 rounded border-stone-700 bg-stone-900 accent-amber-600"
-            />
-            Keep me signed in
-          </label>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-amber-700 text-white text-sm font-semibold py-3 hover:bg-amber-800 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+            >
+              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              Verify & Sign In
+            </button>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-amber-700 text-white text-sm font-semibold py-3 hover:bg-amber-800 transition-colors disabled:opacity-50 disabled:pointer-events-none"
-          >
-            {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-            Sign In
-          </button>
-
-          <p className="text-center text-sm text-stone-400">
-            Don&apos;t have an account?{" "}
-            <Link href="/sign-up" className="text-amber-400 hover:text-amber-300 font-medium">
-              Sign up
-            </Link>
-          </p>
-        </form>
+            <button
+              type="button"
+              onClick={() => {
+                setStep("credentials");
+                setError(null);
+                setCode("");
+              }}
+              className="w-full text-center text-sm text-stone-400 hover:text-stone-300"
+            >
+              ← Back
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

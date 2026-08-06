@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { z } from "zod";
+import { logAction } from "@/lib/audit";
 
 const schema = z.object({
   status: z.enum(["pending", "confirmed", "preparing", "ready", "out_for_delivery", "delivered", "cancelled"]).optional(),
@@ -24,6 +25,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       where: { id },
       data: updateData,
     });
+
+    if (data.status === "cancelled") {
+      await logAction({
+        action: "order.cancelled",
+        targetType: "order",
+        targetId: id,
+        metadata: { orderNumber: updated.order_number },
+      });
+    }
+
     return NextResponse.json(updated);
   } catch (err) {
     if (err instanceof z.ZodError) {

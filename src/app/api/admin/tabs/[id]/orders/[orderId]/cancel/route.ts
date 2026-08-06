@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
+import { logAction } from "@/lib/audit";
 
 export async function POST(
   req: NextRequest,
@@ -25,5 +26,11 @@ export async function POST(
   }
 
   await db.orders.update({ where: { id: orderId }, data: { status: "cancelled" } });
+  await logAction({
+    action: "order.cancelled",
+    targetType: "order",
+    targetId: orderId,
+    metadata: { orderNumber: order.order_number, tabId },
+  });
   return NextResponse.json({ ok: true });
 }

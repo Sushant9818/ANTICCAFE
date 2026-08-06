@@ -7,6 +7,7 @@ import { validatePromo } from "@/lib/promo";
 import { buildEsewaForm } from "@/lib/esewa";
 import { initiateKhaltiPayment } from "@/lib/khalti";
 import { getCurrentCustomer } from "@/lib/customer";
+import { getRestaurantSettings } from "@/lib/settings";
 import { randomBytes } from "crypto";
 
 const schema = z.object({
@@ -36,6 +37,14 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const data = schema.parse(body);
+
+    const settings = await getRestaurantSettings();
+    if (!settings.acceptingOrders) {
+      return NextResponse.json(
+        { error: "We're not accepting online orders right now — please check back soon." },
+        { status: 400 }
+      );
+    }
 
     if (data.paymentMethod === "cash" && data.orderType !== "pickup") {
       return NextResponse.json(
