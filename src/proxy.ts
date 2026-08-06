@@ -16,15 +16,20 @@ const roleGroups: { check: (r: UserRoles) => boolean; matcher: ReturnType<typeof
   },
   {
     check: (r) => r.isKitchen,
-    matcher: createRouteMatcher([
-      "/kitchen(.*)",
-      "/api/admin/orders/(.*)",
-      "/api/admin/menu-availability(.*)",
-    ]),
+    matcher: createRouteMatcher(["/kitchen(.*)", "/api/admin/menu-availability(.*)"]),
   },
   {
     check: (r) => r.isCashier,
     matcher: createRouteMatcher(["/cashier(.*)", "/api/cashier(.*)"]),
+  },
+  {
+    check: (r) => r.isDriver,
+    matcher: createRouteMatcher(["/driver(.*)"]),
+  },
+  // Order status updates are shared between admin, kitchen, and drivers.
+  {
+    check: (r) => r.isKitchen || r.isDriver,
+    matcher: createRouteMatcher(["/api/admin/orders/(.*)"]),
   },
 ];
 
@@ -52,7 +57,7 @@ export default clerkMiddleware(async (auth, req) => {
 
   const roles = email
     ? await getUserRoles(email)
-    : { isAdmin: false, isWaiter: false, isKitchen: false, isCashier: false };
+    : { isAdmin: false, isWaiter: false, isKitchen: false, isCashier: false, isDriver: false };
 
   const allowed = matchedGroup ? roles.isAdmin || matchedGroup.check(roles) : roles.isAdmin;
 

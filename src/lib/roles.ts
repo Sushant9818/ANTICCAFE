@@ -12,6 +12,7 @@ export type UserRoles = {
   isWaiter: boolean;
   isKitchen: boolean;
   isCashier: boolean;
+  isDriver: boolean;
 };
 
 export async function getUserRoles(email: string): Promise<UserRoles> {
@@ -26,6 +27,7 @@ export async function getUserRoles(email: string): Promise<UserRoles> {
     isWaiter: parseEmailList(process.env.WAITER_ALLOWED_EMAILS).includes(email) || hasStaffRole("waiter"),
     isKitchen: parseEmailList(process.env.KITCHEN_ALLOWED_EMAILS).includes(email) || hasStaffRole("kitchen"),
     isCashier: parseEmailList(process.env.CASHIER_ALLOWED_EMAILS).includes(email) || hasStaffRole("cashier"),
+    isDriver: parseEmailList(process.env.DRIVER_ALLOWED_EMAILS).includes(email) || hasStaffRole("driver"),
   };
 }
 
@@ -36,5 +38,6 @@ export async function resolveHomePath(email: string | null | undefined): Promise
   if (roles.isWaiter) return "/waiter/tables";
   if (roles.isKitchen) return "/kitchen";
   if (roles.isCashier) return "/cashier";
+  if (roles.isDriver) return "/driver";
   return "/account/orders";
 }

@@ -5,7 +5,7 @@ import { logAction } from "@/lib/audit";
 
 const schema = z.object({
   name: z.string().min(1).optional(),
-  role: z.enum(["admin", "waiter", "kitchen", "cashier"]).optional(),
+  role: z.enum(["admin", "waiter", "kitchen", "cashier", "driver"]).optional(),
   isActive: z.boolean().optional(),
 });
 

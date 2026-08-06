@@ -6,7 +6,7 @@ import { logAction } from "@/lib/audit";
 const schema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
-  role: z.enum(["admin", "waiter", "kitchen", "cashier"]),
+  role: z.enum(["admin", "waiter", "kitchen", "cashier", "driver"]),
 });
 
 export async function POST(req: NextRequest) {

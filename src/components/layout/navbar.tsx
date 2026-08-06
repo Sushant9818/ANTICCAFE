@@ -17,7 +17,8 @@ export function Navbar() {
     pathname.startsWith("/admin") ||
     pathname.startsWith("/waiter") ||
     pathname.startsWith("/kitchen") ||
-    pathname.startsWith("/cashier");
+    pathname.startsWith("/cashier") ||
+    pathname.startsWith("/driver");
   const router = useRouter();
   const { signOut } = useClerk();
   const { isSignedIn, user } = useUser();

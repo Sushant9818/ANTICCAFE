@@ -17,7 +17,7 @@ type Props = {
   initialStaff: Staff[];
 };
 
-const ROLES = ["admin", "waiter", "kitchen", "cashier"] as const;
+const ROLES = ["admin", "waiter", "kitchen", "cashier", "driver"] as const;
 
 export function StaffManager({ initialStaff }: Props) {
   const [staff, setStaff] = useState(initialStaff);
