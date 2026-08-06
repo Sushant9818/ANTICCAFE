@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { notFound } from "next/navigation";
-import { CheckCircle, Clock, ChefHat, PackageCheck, Bike } from "lucide-react";
+import { CheckCircle, Clock, ChefHat, PackageCheck, Bike, PartyPopper } from "lucide-react";
 import { ORDER_STATUS_COLORS, CAFE_PHONE } from "@/lib/constants";
 import { formatPrice } from "@/lib/utils";
 import type { Metadata } from "next";
@@ -9,13 +9,22 @@ export const metadata: Metadata = {
   title: "Order Status — AnticCafe",
 };
 
-const STATUS_STEPS = [
-  { key: "pending", label: "Order Received", icon: CheckCircle },
-  { key: "confirmed", label: "Confirmed", icon: Clock },
-  { key: "preparing", label: "Preparing", icon: ChefHat },
-  { key: "ready", label: "Ready", icon: PackageCheck },
-  { key: "delivered", label: "Delivered", icon: Bike },
-];
+function getStatusSteps(orderType: string) {
+  const base = [
+    { key: "pending", label: "Order Received", icon: CheckCircle },
+    { key: "confirmed", label: "Confirmed", icon: Clock },
+    { key: "preparing", label: "Preparing", icon: ChefHat },
+    { key: "ready", label: "Ready", icon: PackageCheck },
+  ];
+  if (orderType === "delivery") {
+    return [
+      ...base,
+      { key: "out_for_delivery", label: "Out for Delivery", icon: Bike },
+      { key: "delivered", label: "Delivered", icon: PartyPopper },
+    ];
+  }
+  return [...base, { key: "delivered", label: "Picked Up", icon: PartyPopper }];
+}
 
 export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -78,7 +87,8 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
     notFound();
   }
 
-  const currentStepIndex = STATUS_STEPS.findIndex((s) => s.key === order.status);
+  const statusSteps = getStatusSteps(order.orderType);
+  const currentStepIndex = statusSteps.findIndex((s) => s.key === order.status);
 
   return (
     <div className="container mx-auto px-4 py-10 max-w-2xl">
@@ -120,11 +130,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               width: `${
                 currentStepIndex <= 0
                   ? 0
-                  : (currentStepIndex / (STATUS_STEPS.length - 1)) * 100
+                  : (currentStepIndex / (statusSteps.length - 1)) * 100
               }%`,
             }}
           />
-          {STATUS_STEPS.map((step, idx) => {
+          {statusSteps.map((step, idx) => {
             const Icon = step.icon;
             const done = idx <= currentStepIndex;
             return (

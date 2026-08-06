@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { getCurrentCustomer } from "@/lib/customer";
 import { OrdersList } from "@/components/account/orders-list";
+import { AccountNav } from "@/components/account/account-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -38,8 +39,9 @@ export default async function AccountOrdersPage() {
 
   return (
     <div className="container mx-auto px-4 py-10 max-w-3xl">
-      <h1 className="text-3xl font-bold text-white mb-2">My Orders</h1>
-      <p className="text-stone-400 mb-8">Track, cancel, and review your past orders.</p>
+      <h1 className="text-3xl font-bold text-white mb-2">My Account</h1>
+      <p className="text-stone-400 mb-6">Track, cancel, and review your past orders.</p>
+      <AccountNav />
       <OrdersList orders={orders} reviewedItemIds={[...reviewedItemIds]} />
     </div>
   );

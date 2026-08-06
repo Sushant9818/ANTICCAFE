@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
-import { Star, X } from "lucide-react";
+import { Star, X, MapPin } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { ORDER_STATUS_COLORS } from "@/lib/constants";
+
+const TRACKABLE_STATUSES = ["pending", "confirmed", "preparing", "ready", "out_for_delivery"];
 
 type OrderItem = {
   id: string;
@@ -148,15 +151,26 @@ export function OrdersList({ orders: initialOrders, reviewedItemIds: initialRevi
 
           <div className="border-t border-stone-800 mt-3 pt-3 flex items-center justify-between">
             <p className="font-semibold text-white text-sm">Total {formatPrice(Number(order.total))}</p>
-            {order.status === "pending" && (
-              <button
-                onClick={() => cancelOrder(order.id)}
-                disabled={cancellingId === order.id}
-                className="px-3 py-1.5 rounded-full border border-red-900/50 text-red-400 text-xs font-medium hover:bg-red-950/50 disabled:opacity-50"
-              >
-                {cancellingId === order.id ? "Cancelling…" : "Cancel Order"}
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {TRACKABLE_STATUSES.includes(order.status) && (
+                <Link
+                  href={`/order/${order.id}`}
+                  target="_blank"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-700 text-stone-300 text-xs font-medium hover:border-amber-500 hover:text-amber-400"
+                >
+                  <MapPin className="h-3.5 w-3.5" /> Track Order
+                </Link>
+              )}
+              {order.status === "pending" && (
+                <button
+                  onClick={() => cancelOrder(order.id)}
+                  disabled={cancellingId === order.id}
+                  className="px-3 py-1.5 rounded-full border border-red-900/50 text-red-400 text-xs font-medium hover:bg-red-950/50 disabled:opacity-50"
+                >
+                  {cancellingId === order.id ? "Cancelling…" : "Cancel Order"}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       ))}
