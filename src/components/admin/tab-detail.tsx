@@ -122,6 +122,7 @@ export function TabDetail({
   const [cart, setCart] = useState<CartLine[]>([]);
   const [sending, setSending] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [cancellingTab, setCancellingTab] = useState(false);
   const [cancellingRoundId, setCancellingRoundId] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card" | "esewa" | "khalti">("cash");
 
@@ -209,6 +210,23 @@ export function TabDetail({
       toast.error(err instanceof Error ? err.message : "Failed to close tab");
     } finally {
       setClosing(false);
+    }
+  };
+
+  const cancelTab = async () => {
+    if (!confirm(`Cancel Table ${tab.tableNumber}'s tab and empty it? This can't be undone.`)) return;
+    setCancellingTab(true);
+    try {
+      const res = await fetch(`/api/admin/tabs/${tab.id}/cancel`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setStatus("cancelled");
+      toast.success("Table cancelled and emptied");
+      router.push(basePath);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to cancel table");
+    } finally {
+      setCancellingTab(false);
     }
   };
 
@@ -436,6 +454,13 @@ export function TabDetail({
                 className="w-full py-3 rounded-full bg-admin-amber text-white text-sm font-semibold hover:bg-admin-amber/90 disabled:opacity-50"
               >
                 {closing ? "Closing…" : `${billLabel} ${formatPrice(tabTotal)}`}
+              </button>
+              <button
+                onClick={cancelTab}
+                disabled={cancellingTab}
+                className="w-full mt-2 py-2.5 rounded-full border border-red-900/50 text-red-400 text-sm font-medium hover:bg-red-950/50 transition-colors disabled:opacity-50"
+              >
+                {cancellingTab ? "Cancelling…" : "Cancel Table & Empty"}
               </button>
             </div>
 
