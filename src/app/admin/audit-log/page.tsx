@@ -19,6 +19,10 @@ const ACTION_LABELS: Record<string, string> = {
   "staff.deactivated": "Deactivated staff member",
   "staff.removed": "Removed staff member",
   "order.cancelled": "Cancelled order",
+  "purchase.added": "Added purchase item",
+  "purchase.bought": "Marked purchase item bought",
+  "purchase.reopened": "Reopened purchase item",
+  "purchase.removed": "Removed purchase item",
 };
 
 export default async function AdminAuditLogPage() {

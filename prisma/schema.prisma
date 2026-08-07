@@ -234,3 +234,17 @@ model restaurant_settings {
   value      Json?
   updated_at DateTime @default(now())
 }
+
+model purchase_items {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  item_name   String
+  quantity    String?
+  price       Decimal?
+  note        String?
+  status      String    @default("pending")
+  added_by    String?
+  created_at  DateTime  @default(now())
+  bought_at   DateTime?
+
+  @@index([status])
+}

@@ -8,6 +8,11 @@ ALTER TABLE public.reservations       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.staff              ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.promos             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.restaurant_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.audit_logs         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.dine_in_tabs       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tables             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.reviews            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.purchase_items     ENABLE ROW LEVEL SECURITY;
 
 -- ── PUBLIC READ policies (menu display) ──────────────────────────────────────
 
@@ -52,7 +57,7 @@ CREATE POLICY "public_insert_reservation"
   ON public.reservations FOR INSERT
   WITH CHECK (true);
 
--- ── Everything else (customers, staff) has NO public policies ────────────────
+-- ── Everything else (customers, staff, audit_logs, dine_in_tabs, tables, reviews) has NO public policies ──
 -- Blocked by default once RLS is enabled.
 -- All server-side ops go through the direct Postgres connection (superuser)
 -- which bypasses RLS entirely — no server breakage.
