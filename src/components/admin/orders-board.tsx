@@ -49,6 +49,20 @@ const STATUS_FLOW: Record<string, string> = {
   out_for_delivery: "delivered",
 };
 
+function getNextStatus(order: Order): string | null {
+  if (order.status === "ready") {
+    return order.orderType === "delivery" ? "out_for_delivery" : "delivered";
+  }
+  return STATUS_FLOW[order.status] ?? null;
+}
+
+function getNextStatusLabel(order: Order, nextStatus: string): string {
+  if (order.status === "ready" && order.orderType !== "delivery") {
+    return "picked up";
+  }
+  return nextStatus.replace(/_/g, " ");
+}
+
 export function AdminOrdersBoard({ initialOrders }: Props) {
   const [orders, setOrders] = useState(initialOrders);
   const [filter, setFilter] = useState<string>("active");
@@ -253,14 +267,12 @@ export function AdminOrdersBoard({ initialOrders }: Props) {
               )}
 
               {/* Action */}
-              {STATUS_FLOW[order.status] && (
+              {getNextStatus(order) && (
                 <button
-                  onClick={() =>
-                    handleStatusUpdate(order.id, STATUS_FLOW[order.status])
-                  }
+                  onClick={() => handleStatusUpdate(order.id, getNextStatus(order)!)}
                   className="w-full py-2 rounded-xl bg-admin-amber text-white text-sm font-medium hover:bg-admin-amber/90 transition-colors capitalize"
                 >
-                  Mark as {STATUS_FLOW[order.status].replace(/_/g, " ")}
+                  Mark as {getNextStatusLabel(order, getNextStatus(order)!)}
                 </button>
               )}
 

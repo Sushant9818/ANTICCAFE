@@ -213,6 +213,11 @@ export function PurchaseListManager({ initialItems }: Props) {
                       {item.price && (
                         <span className="text-stone-400 ml-2">{formatPrice(Number(item.price))}</span>
                       )}
+                      {item.boughtAt && (
+                        <span className="text-xs text-stone-400 ml-2">
+                          on {new Date(item.boughtAt).toLocaleDateString()}
+                        </span>
+                      )}
                     </td>
                     <td className="px-5 py-3 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-2">

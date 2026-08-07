@@ -36,6 +36,18 @@ export default function LoginPage() {
     router.push(path);
   }
 
+  async function handleGoogleSignIn() {
+    setError(null);
+    const { error: ssoError } = await signIn.sso({
+      strategy: "oauth_google",
+      redirectUrl: `${window.location.origin}/sso-callback`,
+      redirectCallbackUrl: `${window.location.origin}/sso-callback`,
+    });
+    if (ssoError) {
+      setError(ssoError.longMessage ?? "Could not start Google sign-in.");
+    }
+  }
+
   async function handleCredentialsSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (submitting) return;
@@ -190,6 +202,39 @@ export default function LoginPage() {
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
               Sign In
+            </button>
+
+            <div className="flex items-center gap-3 text-xs text-stone-500">
+              <div className="h-px flex-1 bg-stone-800" />
+              or
+              <div className="h-px flex-1 bg-stone-800" />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={submitting}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-full border border-stone-700 bg-stone-900 text-white text-sm font-semibold py-3 hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.47c-.28 1.5-1.13 2.78-2.4 3.63v3h3.88c2.27-2.09 3.57-5.17 3.57-8.82z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 24c3.24 0 5.95-1.07 7.94-2.9l-3.88-3.01c-1.08.72-2.45 1.15-4.06 1.15-3.12 0-5.77-2.11-6.71-4.94H1.28v3.1C3.26 21.3 7.31 24 12 24z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.29 14.3a7.2 7.2 0 0 1 0-4.6v-3.1H1.28a12 12 0 0 0 0 10.8z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 4.75c1.76 0 3.34.6 4.58 1.79l3.44-3.44C17.94 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.28 6.6l4.01 3.1C6.23 6.86 8.88 4.75 12 4.75z"
+                />
+              </svg>
+              Continue with Google
             </button>
 
             <p className="text-center text-sm text-stone-400">
